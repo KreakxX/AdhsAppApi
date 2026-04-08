@@ -1,0 +1,1 @@
+export declare const db: import("@/prisma/generated/prisma/internal/class").PrismaClient<never, import("@/prisma/generated/prisma/internal/prismaNamespace").GlobalOmitConfig | undefined, import("@prisma/client/runtime/library").DefaultArgs>;

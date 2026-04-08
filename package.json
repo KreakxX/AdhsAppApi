@@ -1,0 +1,35 @@
+{
+  "name": "adhs-app-api",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/luxon": "^3.7.1",
+    "@types/nodemailer": "^7.0.4",
+    "prisma": "^6.18.0",
+    "prismabox": "^1.1.26",
+    "ts-node": "^10.9.2"
+  },
+  "peerDependencies": {
+  "typescript": "6.0.2"
+  },
+  "dependencies": {
+    "@aws-sdk/client-lambda": "^3.918.0",
+    "@elysiajs/cors": "1.4.0",
+    "@elysiajs/jwt": "1.4.0",
+    "@elysiajs/node": "1.4.5",
+    "@elysiajs/openapi": "1.4.14",
+    "elysia": "1.4.28",
+    "@prisma/client": "6.18.0",
+    "date-fns-tz": "3.2.0",
+    "elysia-rate-limit": "4.4.2",
+    "express-rate-limit": "^8.2.0",
+    "luxon": "^3.7.2",
+    "mysql2": "^3.15.3",
+    "node-cron": "^4.2.1",
+    "nodemailer": "^7.0.11",
+    "redis": "^5.10.0",
+    "superjson": "^2.2.6"
+  }
+}

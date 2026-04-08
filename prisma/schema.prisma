@@ -1,0 +1,27 @@
+generator client {
+  provider      = "prisma-client"
+  binaryTargets = ["native", "windows", "linux-musl-openssl-3.0.x"]
+  output        = "./generated/prisma"
+}
+
+generator prismabox {
+  provider                    = "prismabox"
+  typeboxImportDependencyName = "elysia"
+  typeboxImportVariableName   = "t"
+  inputModel                  = true
+  output                      = "../generated/prismabox"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model user {
+  id         String  @id @default(uuid())
+  email      String  @unique(map: "User_email_key")
+  password   String?
+  googleID   String? @unique
+  onboarding Boolean @default(false)
+  name       String
+}
