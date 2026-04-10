@@ -49,4 +49,35 @@ export const authRoutes = new Elysia({ prefix: '/auth' }).use(
   200: t.Object({ user: userPlain }),
   404: t.Object({ message: t.String(), status: t.Boolean() }),
 }
+}).get("/is/user/onboarded", async({query})=>{
+
+  const user = await db.user.findUnique({where: {id: query.userId}})
+  if(!user || !user.onboarding){
+    return {onboarded: false}
+  }
+  return {onboarded: true}
+
+},{query: t.Object({
+  userId: t.String()
+}),response: {
+  200: t.Object({onboarded: t.Boolean()})
+}})
+.get("/is/jwt/valid", async({jwt, headers,status})=>{
+   const auth = headers.authorization;
+
+  if(!auth || !auth.startsWith("Bearer ")) return status(404, "No Authorization Header found")
+
+  const token = auth.split(" ")[1];
+  const payload = await jwt.verify(token);
+
+  if(!payload) return status(404, "No Payload")
+
+  return {
+    authenticated: true,
+  }
+},{
+  response:{
+    200: t.Object({authenticated:t.Boolean()}),
+    404: t.String()
+  }
 })

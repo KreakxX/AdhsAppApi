@@ -133,8 +133,9 @@ export declare const authRoutes: Elysia<"/auth", {
                             id: string;
                             password: string | null;
                             googleID: string | null;
-                            onboarding: boolean;
                             name: string;
+                            onboarding: boolean;
+                            createdAt: Date;
                         };
                     };
                     404: {
@@ -149,6 +150,67 @@ export declare const authRoutes: Elysia<"/auth", {
                         found?: unknown;
                         property?: string;
                         expected?: string;
+                    };
+                };
+            };
+        };
+    };
+} & {
+    auth: {
+        is: {
+            user: {
+                onboarded: {
+                    get: {
+                        body: unknown;
+                        params: {};
+                        query: {
+                            userId: string;
+                        };
+                        headers: unknown;
+                        response: {
+                            200: {
+                                onboarded: boolean;
+                            };
+                            422: {
+                                type: "validation";
+                                on: string;
+                                summary?: string;
+                                message?: string;
+                                found?: unknown;
+                                property?: string;
+                                expected?: string;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+    };
+} & {
+    auth: {
+        is: {
+            jwt: {
+                valid: {
+                    get: {
+                        body: unknown;
+                        params: {};
+                        query: unknown;
+                        headers: unknown;
+                        response: {
+                            200: {
+                                authenticated: boolean;
+                            };
+                            404: string;
+                            422: {
+                                type: "validation";
+                                on: string;
+                                summary?: string;
+                                message?: string;
+                                found?: unknown;
+                                property?: string;
+                                expected?: string;
+                            };
+                        };
                     };
                 };
             };

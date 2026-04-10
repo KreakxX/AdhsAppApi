@@ -39,8 +39,10 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 
 /prisma/generated/prisma/
 
-pillcall-api.tar
+adhs-app-api.tar
 
 Dockerfile
 
 generated/
+
+*.d.ts
