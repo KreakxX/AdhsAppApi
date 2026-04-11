@@ -121,7 +121,7 @@ export const routineRoutes = new Elysia({ prefix: "/routines" })
       }))),
     }),
     response: {
-      200: t.Object({ routine: t.Any() }),
+      200: t.Object({routine: t.Composite([routinePlain, t.Object({items: t.Array(routineItemPlain)})])}),
       401: t.String(),
     },
   })

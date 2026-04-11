@@ -63,7 +63,6 @@ model routineItem {
 model group {
   id         String   @id @default(uuid())
   name       String
-  emoji      String   @default("🏠")
   inviteCode String   @unique @default(cuid())
   createdAt  DateTime @default(now())
 

@@ -7,6 +7,7 @@ import path from "node:path";
 import jwt from "@elysiajs/jwt";
 import { authRoutes } from "./routes/auth";
 import { routineRoutes } from "./routes/routines";
+import { groupRoutes } from "./routes/groups";
 
 export const app = new Elysia({ adapter: node() })
   .use(cors())
@@ -21,5 +22,5 @@ export const app = new Elysia({ adapter: node() })
     })
   )
 
- .use(authRoutes).use(routineRoutes).listen(8060)
+ .use(authRoutes).use(routineRoutes).use(groupRoutes).listen(8060)
 

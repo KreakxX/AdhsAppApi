@@ -216,6 +216,33 @@ export declare const authRoutes: Elysia<"/auth", {
             };
         };
     };
+} & {
+    auth: {
+        onboarding: {
+            status: {
+                put: {
+                    body: {
+                        userId: string;
+                        onboarded: boolean;
+                    };
+                    params: {};
+                    query: unknown;
+                    headers: unknown;
+                    response: {
+                        422: {
+                            type: "validation";
+                            on: string;
+                            summary?: string;
+                            message?: string;
+                            found?: unknown;
+                            property?: string;
+                            expected?: string;
+                        };
+                    };
+                };
+            };
+        };
+    };
 }, {
     derive: {};
     resolve: {};

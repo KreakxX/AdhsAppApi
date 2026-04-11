@@ -80,4 +80,8 @@ export const authRoutes = new Elysia({ prefix: '/auth' }).use(
     200: t.Object({authenticated:t.Boolean()}),
     404: t.String()
   }
+}).put("/onboarding/status", async({body})=>{
+   await db.user.update({where:{id: body.userId},data: { onboarding: body.onboarded}})
+},{
+  body: t.Object({onboarded: t.Boolean(), userId: t.String()})
 })

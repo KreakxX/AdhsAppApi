@@ -237,6 +237,33 @@ export declare const app: Elysia<"", {
         };
     };
 } & {
+    auth: {
+        onboarding: {
+            status: {
+                put: {
+                    body: {
+                        userId: string;
+                        onboarded: boolean;
+                    };
+                    params: {};
+                    query: unknown;
+                    headers: unknown;
+                    response: {
+                        422: {
+                            type: "validation";
+                            on: string;
+                            summary?: string;
+                            message?: string;
+                            found?: unknown;
+                            property?: string;
+                            expected?: string;
+                        };
+                    };
+                };
+            };
+        };
+    };
+} & {
     routines: {};
 } & {
     routines: {
@@ -358,7 +385,28 @@ export declare const app: Elysia<"", {
             headers: unknown;
             response: {
                 200: {
-                    routine: any;
+                    routine: {
+                        items: {
+                            id: string;
+                            name: string;
+                            description: string | null;
+                            imageUrl: string | null;
+                            checked: boolean;
+                            routineId: string;
+                        }[];
+                        id: string;
+                        name: string;
+                        createdAt: Date;
+                        radius: number;
+                        triggerHour: number;
+                        triggerMinute: number;
+                        freeSpace: number;
+                        latitude: number | null;
+                        longitude: number | null;
+                        street: string | null;
+                        streetNumber: string | null;
+                        userId: string;
+                    };
                 };
                 401: string;
                 422: {
@@ -510,6 +558,237 @@ export declare const app: Elysia<"", {
                                 expected?: string;
                             };
                         };
+                    };
+                };
+            };
+        };
+    };
+} & {
+    groups: {};
+} & {
+    groups: {
+        post: {
+            body: {
+                emoji?: string | undefined;
+                name: string;
+            };
+            params: {};
+            query: unknown;
+            headers: unknown;
+            response: {
+                200: {
+                    group: {
+                        id: string;
+                        name: string;
+                        createdAt: Date;
+                        inviteCode: string;
+                        members: {
+                            id: string;
+                            userId: string;
+                            groupId: string;
+                        }[];
+                        reminders: {
+                            id: string;
+                            createdAt: Date;
+                            radius: number;
+                            triggerHour: number;
+                            triggerMinute: number;
+                            latitude: number | null;
+                            longitude: number | null;
+                            street: string | null;
+                            streetNumber: string | null;
+                            groupId: string;
+                            title: string;
+                        }[];
+                    };
+                };
+                401: string;
+                422: {
+                    type: "validation";
+                    on: string;
+                    summary?: string;
+                    message?: string;
+                    found?: unknown;
+                    property?: string;
+                    expected?: string;
+                };
+            };
+        };
+    };
+} & {
+    groups: {
+        get: {
+            body: unknown;
+            params: {};
+            query: unknown;
+            headers: unknown;
+            response: {
+                200: {
+                    groups: any[];
+                };
+                401: string;
+                422: {
+                    type: "validation";
+                    on: string;
+                    summary?: string;
+                    message?: string;
+                    found?: unknown;
+                    property?: string;
+                    expected?: string;
+                };
+            };
+        };
+    };
+} & {
+    groups: {
+        join: {
+            post: {
+                body: {
+                    inviteCode: string;
+                };
+                params: {};
+                query: unknown;
+                headers: unknown;
+                response: {
+                    200: {
+                        group: any;
+                    };
+                    404: string;
+                    400: string;
+                    401: string;
+                    422: {
+                        type: "validation";
+                        on: string;
+                        summary?: string;
+                        message?: string;
+                        found?: unknown;
+                        property?: string;
+                        expected?: string;
+                    };
+                };
+            };
+        };
+    };
+} & {
+    groups: {
+        leave: {
+            delete: {
+                body: {
+                    groupId: string;
+                };
+                params: {};
+                query: unknown;
+                headers: unknown;
+                response: {
+                    200: {
+                        message: string;
+                    };
+                    404: string;
+                    401: string;
+                    422: {
+                        type: "validation";
+                        on: string;
+                        summary?: string;
+                        message?: string;
+                        found?: unknown;
+                        property?: string;
+                        expected?: string;
+                    };
+                };
+            };
+        };
+    };
+} & {
+    groups: {
+        reminders: {
+            post: {
+                body: {
+                    radius?: number | undefined;
+                    triggerHour?: number | undefined;
+                    triggerMinute?: number | undefined;
+                    latitude?: number | null | undefined;
+                    longitude?: number | null | undefined;
+                    street?: string | null | undefined;
+                    streetNumber?: string | null | undefined;
+                    groupId: string;
+                    title: string;
+                };
+                params: {};
+                query: unknown;
+                headers: unknown;
+                response: {
+                    200: {
+                        reminder: any;
+                    };
+                    401: string;
+                    403: string;
+                    422: {
+                        type: "validation";
+                        on: string;
+                        summary?: string;
+                        message?: string;
+                        found?: unknown;
+                        property?: string;
+                        expected?: string;
+                    };
+                };
+            };
+        };
+    };
+} & {
+    groups: {
+        reminders: {
+            delete: {
+                body: {
+                    reminderId: string;
+                };
+                params: {};
+                query: unknown;
+                headers: unknown;
+                response: {
+                    200: {
+                        message: string;
+                    };
+                    404: string;
+                    401: string;
+                    403: string;
+                    422: {
+                        type: "validation";
+                        on: string;
+                        summary?: string;
+                        message?: string;
+                        found?: unknown;
+                        property?: string;
+                        expected?: string;
+                    };
+                };
+            };
+        };
+    };
+} & {
+    groups: {
+        ":id": {
+            delete: {
+                body: unknown;
+                params: {
+                    id: string;
+                };
+                query: unknown;
+                headers: unknown;
+                response: {
+                    200: {
+                        message: string;
+                    };
+                    401: string;
+                    403: string;
+                    422: {
+                        type: "validation";
+                        on: string;
+                        summary?: string;
+                        message?: string;
+                        found?: unknown;
+                        property?: string;
+                        expected?: string;
                     };
                 };
             };
