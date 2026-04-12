@@ -136,6 +136,7 @@ export declare const authRoutes: Elysia<"/auth", {
                             name: string;
                             onboarding: boolean;
                             createdAt: Date;
+                            fcmToken: string | null;
                         };
                     };
                     404: {

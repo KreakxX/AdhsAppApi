@@ -8,6 +8,7 @@ import jwt from "@elysiajs/jwt";
 import { authRoutes } from "./routes/auth";
 import { routineRoutes } from "./routes/routines";
 import { groupRoutes } from "./routes/groups";
+import { notificationRoutes } from "./routes/notifications";
 
 export const app = new Elysia({ adapter: node() })
   .use(cors())
@@ -22,5 +23,5 @@ export const app = new Elysia({ adapter: node() })
     })
   )
 
- .use(authRoutes).use(routineRoutes).use(groupRoutes).listen(8060)
+ .use(authRoutes).use(routineRoutes).use(notificationRoutes).use(groupRoutes).listen(8060)
 

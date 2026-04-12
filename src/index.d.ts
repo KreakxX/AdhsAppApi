@@ -156,6 +156,7 @@ export declare const app: Elysia<"", {
                             name: string;
                             onboarding: boolean;
                             createdAt: Date;
+                            fcmToken: string | null;
                         };
                     };
                     404: {
@@ -564,6 +565,66 @@ export declare const app: Elysia<"", {
         };
     };
 } & {
+    notifications: {};
+} & {
+    notifications: {
+        token: {
+            post: {
+                body: {
+                    token: string;
+                };
+                params: {};
+                query: unknown;
+                headers: unknown;
+                response: {
+                    200: {
+                        ok: boolean;
+                    };
+                    401: string;
+                    422: {
+                        type: "validation";
+                        on: string;
+                        summary?: string;
+                        message?: string;
+                        found?: unknown;
+                        property?: string;
+                        expected?: string;
+                    };
+                };
+            };
+        };
+    };
+} & {
+    notifications: {
+        trigger: {
+            post: {
+                body: {
+                    reminderId: string;
+                };
+                params: {};
+                query: unknown;
+                headers: unknown;
+                response: {
+                    200: {
+                        sent?: number | undefined;
+                        ok: boolean;
+                    };
+                    404: string;
+                    401: string;
+                    422: {
+                        type: "validation";
+                        on: string;
+                        summary?: string;
+                        message?: string;
+                        found?: unknown;
+                        property?: string;
+                        expected?: string;
+                    };
+                };
+            };
+        };
+    };
+} & {
     groups: {};
 } & {
     groups: {
@@ -586,6 +647,16 @@ export declare const app: Elysia<"", {
                             id: string;
                             userId: string;
                             groupId: string;
+                            user: {
+                                email: string;
+                                id: string;
+                                password: string | null;
+                                googleID: string | null;
+                                name: string;
+                                onboarding: boolean;
+                                createdAt: Date;
+                                fcmToken: string | null;
+                            };
                         }[];
                         reminders: {
                             id: string;
@@ -624,7 +695,40 @@ export declare const app: Elysia<"", {
             headers: unknown;
             response: {
                 200: {
-                    groups: any[];
+                    groups: {
+                        id: string;
+                        name: string;
+                        createdAt: Date;
+                        inviteCode: string;
+                        members: {
+                            id: string;
+                            userId: string;
+                            groupId: string;
+                            user: {
+                                email: string;
+                                id: string;
+                                password: string | null;
+                                googleID: string | null;
+                                name: string;
+                                onboarding: boolean;
+                                createdAt: Date;
+                                fcmToken: string | null;
+                            };
+                        }[];
+                        reminders: {
+                            id: string;
+                            createdAt: Date;
+                            radius: number;
+                            triggerHour: number;
+                            triggerMinute: number;
+                            latitude: number | null;
+                            longitude: number | null;
+                            street: string | null;
+                            streetNumber: string | null;
+                            groupId: string;
+                            title: string;
+                        }[];
+                    }[];
                 };
                 401: string;
                 422: {

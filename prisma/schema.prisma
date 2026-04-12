@@ -18,16 +18,16 @@ datasource db {
 }
 
 model user {
-  id         String   @id @default(uuid())
-  email      String   @unique
+  id         String        @id @default(uuid())
+  email      String        @unique
   password   String?
-  googleID   String?  @unique
+  googleID   String?       @unique
   name       String
-  onboarding Boolean  @default(false)
-  createdAt  DateTime @default(now())
-
-  routines routine[]
-  groups   groupMember[]
+  onboarding Boolean       @default(false)
+  createdAt  DateTime      @default(now())
+  fcmToken   String?
+  routines   routine[]
+  groups     groupMember[]
 }
 
 model routine {

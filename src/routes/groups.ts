@@ -4,6 +4,7 @@ import { db } from "../../db.ts";
 import { groupPlain } from "@/generated/prismabox/group.ts";
 import { groupMemberPlain } from "@/generated/prismabox/groupMember.ts";
 import { sharedReminderPlain } from "@/generated/prismabox/sharedReminder.ts";
+import { userPlain } from "@/generated/prismabox/user.ts";
 
 const jwtGuard = new Elysia({ name: "jwtGuard" }).use(
   jwt({ name: "jwt", secret: process.env.JWT_SECRET! })
@@ -23,14 +24,21 @@ export const groupRoutes = new Elysia({ prefix: "/groups" })
 
   .post("/", async ({ userId, body }) => {
     const group = await db.group.create({
-      data: {
-        name:  body.name,
-        members: {
-          create: { userId }, 
-        },
+  data: {
+    name: body.name,
+    members: {
+      create: { userId },
+    },
+  },
+  include: {
+    members: {
+      include: {
+        user: true, 
       },
-      include: { members: true, reminders: true},
-    });
+    },
+    reminders: true,
+  },
+});
 
     return { group };
   }, {
@@ -39,8 +47,8 @@ export const groupRoutes = new Elysia({ prefix: "/groups" })
       emoji: t.Optional(t.String()),
     }),
     response: {
-      200: t.Object({group: t.Composite([groupPlain, t.Object({reminders: t.Array(sharedReminderPlain)}), t.Object({members: t.Array(groupMemberPlain)})])}),
-      401: t.String(),
+200: t.Object({ group: t.Composite([groupPlain, t.Object({ reminders: t.Array(sharedReminderPlain) }), t.Object({ members: t.Array(t.Composite([groupMemberPlain, t.Object({ user: userPlain })])) })]) }),
+ 401: t.String(),
     },
   })
 
@@ -50,7 +58,11 @@ export const groupRoutes = new Elysia({ prefix: "/groups" })
         members: { some: { userId } },
       },
       include: {
-        members:  true,
+        members: {
+          include:{
+            user: true
+          }
+        },
         reminders: true,
       },
       orderBy: { createdAt: "desc" },
@@ -59,7 +71,7 @@ export const groupRoutes = new Elysia({ prefix: "/groups" })
     return { groups };
   }, {
     response: {
-      200: t.Object({ groups: t.Array(t.Any()) }),
+      200: t.Object({ groups: t.Array( t.Composite([groupPlain, t.Object({ reminders: t.Array(sharedReminderPlain) }), t.Object({ members: t.Array(t.Composite([groupMemberPlain, t.Object({ user: userPlain })])) })]))}),
       401: t.String(),
     },
   })
