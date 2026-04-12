@@ -962,17 +962,11 @@ export declare const app: Elysia<"", {
                             headers: unknown;
                             response: {
                                 200: {
-                                    item: {
-                                        id: string;
-                                        name: string;
-                                        description: string | null;
-                                        imageUrl: string | null;
-                                        checkedBy: string | null;
-                                        checkedAt: Date | null;
-                                        routineId: string;
-                                    };
+                                    item: any;
                                 };
+                                404: string;
                                 401: "Unauthorized" | "Invalid token";
+                                403: string;
                                 422: {
                                     type: "validation";
                                     on: string;

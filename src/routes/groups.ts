@@ -252,6 +252,8 @@ routines: {
     if (!reminder) return status(404, "Erinnerung nicht gefunden");
 
     if(!reminder.groupId) return status(404, "Erinnerung nicht in der Gruppe gefunden");
+      
+    if (reminder.userId !== userId) return status(403, "Nur der Ersteller kann diese Erinnerung löschen");
 
     const membership = await db.groupMember.findUnique({
       where: { groupId_userId: { groupId: reminder.groupId, userId } },
@@ -292,7 +294,19 @@ routines: {
       403: t.String(),
     },
   })
-.patch("/reminders/:reminderId/items/:itemId", async ({ userId, params }) => {
+.patch("/reminders/:reminderId/items/:itemId", async ({ userId, params, status }) => {
+  const reminder = await db.routine.findUnique({
+    where: { id: params.reminderId },
+  });
+
+  if (!reminder?.groupId) return status(404, "Erinnerung nicht gefunden");
+
+  const membership = await db.groupMember.findUnique({
+    where: { groupId_userId: { groupId: reminder.groupId, userId } },
+  });
+
+  if (!membership) return status(403, "Nicht Mitglied dieser Gruppe");
+
   const item = await db.routineItem.update({
     where: { id: params.itemId },
     data: {
@@ -300,9 +314,15 @@ routines: {
       checkedAt: new Date(),
     },
   });
+
   return { item };
 }, {
   params: t.Object({ reminderId: t.String(), itemId: t.String() }),
+  response: {
+    200: t.Object({ item: t.Any() }),
+    403: t.String(),
+    404: t.String(),
+  },
 })
 .delete("/reminders/:reminderId/reset", async ({ params }) => {
   await db.routineItem.updateMany({
