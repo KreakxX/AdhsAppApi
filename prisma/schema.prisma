@@ -18,16 +18,17 @@ datasource db {
 }
 
 model user {
-  id         String        @id @default(uuid())
-  email      String        @unique
+  id         String   @id @default(uuid())
+  email      String   @unique
   password   String?
-  googleID   String?       @unique
+  googleID   String?  @unique
   name       String
-  onboarding Boolean       @default(false)
-  createdAt  DateTime      @default(now())
+  onboarding Boolean  @default(false)
   fcmToken   String?
-  routines   routine[]
-  groups     groupMember[]
+  createdAt  DateTime @default(now())
+
+  routines routine[]
+  groups   groupMember[]
 }
 
 model routine {
@@ -36,15 +37,18 @@ model routine {
   radius        Int      @default(50)
   triggerHour   Int      @default(0)
   triggerMinute Int      @default(0)
-  freeSpace     Int      @default(5)
   latitude      Float?
   longitude     Float?
   street        String?
   streetNumber  String?
+  freeSpace     Int?
   createdAt     DateTime @default(now())
 
-  userId String
-  user   user   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String?
+  user   user?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  groupId String?
+  group   group?  @relation(fields: [groupId], references: [id], onDelete: Cascade)
 
   items routineItem[]
 }
@@ -54,7 +58,9 @@ model routineItem {
   name        String
   description String?
   imageUrl    String?
-  checked     Boolean @default(false)
+
+  checkedBy String?
+  checkedAt DateTime?
 
   routineId String
   routine   routine @relation(fields: [routineId], references: [id], onDelete: Cascade)
@@ -66,8 +72,8 @@ model group {
   inviteCode String   @unique @default(cuid())
   createdAt  DateTime @default(now())
 
-  members   groupMember[]
-  reminders sharedReminder[]
+  members  groupMember[]
+  routines routine[]
 }
 
 model groupMember {
@@ -80,20 +86,4 @@ model groupMember {
   user   user   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([groupId, userId])
-}
-
-model sharedReminder {
-  id            String   @id @default(uuid())
-  title         String
-  radius        Int      @default(80)
-  triggerHour   Int      @default(0)
-  triggerMinute Int      @default(0)
-  latitude      Float?
-  longitude     Float?
-  street        String?
-  streetNumber  String?
-  createdAt     DateTime @default(now())
-
-  groupId String
-  group   group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
 }

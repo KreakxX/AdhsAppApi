@@ -155,8 +155,8 @@ export declare const app: Elysia<"", {
                             googleID: string | null;
                             name: string;
                             onboarding: boolean;
-                            createdAt: Date;
                             fcmToken: string | null;
+                            createdAt: Date;
                         };
                     };
                     404: {
@@ -281,7 +281,8 @@ export declare const app: Elysia<"", {
                             name: string;
                             description: string | null;
                             imageUrl: string | null;
-                            checked: boolean;
+                            checkedBy: string | null;
+                            checkedAt: Date | null;
                             routineId: string;
                         }[];
                         id: string;
@@ -290,12 +291,13 @@ export declare const app: Elysia<"", {
                         radius: number;
                         triggerHour: number;
                         triggerMinute: number;
-                        freeSpace: number;
                         latitude: number | null;
                         longitude: number | null;
                         street: string | null;
                         streetNumber: string | null;
-                        userId: string;
+                        freeSpace: number | null;
+                        userId: string | null;
+                        groupId: string | null;
                     }[];
                 };
                 401: string;
@@ -329,8 +331,8 @@ export declare const app: Elysia<"", {
                                 name: string;
                                 description: string | null;
                                 imageUrl: string | null;
-                                checked: boolean;
                                 routineId: string;
+                                checked: boolean;
                             }[];
                             id: string;
                             name: string;
@@ -338,11 +340,11 @@ export declare const app: Elysia<"", {
                             radius: number;
                             triggerHour: number;
                             triggerMinute: number;
-                            freeSpace: number;
                             latitude: number | null;
                             longitude: number | null;
                             street: string | null;
                             streetNumber: string | null;
+                            freeSpace: number;
                             userId: string;
                         };
                     };
@@ -374,11 +376,11 @@ export declare const app: Elysia<"", {
                 radius?: number | undefined;
                 triggerHour?: number | undefined;
                 triggerMinute?: number | undefined;
-                freeSpace?: number | undefined;
                 latitude?: number | null | undefined;
                 longitude?: number | null | undefined;
                 street?: string | null | undefined;
                 streetNumber?: string | null | undefined;
+                freeSpace?: number | undefined;
                 name: string;
             };
             params: {};
@@ -392,7 +394,8 @@ export declare const app: Elysia<"", {
                             name: string;
                             description: string | null;
                             imageUrl: string | null;
-                            checked: boolean;
+                            checkedBy: string | null;
+                            checkedAt: Date | null;
                             routineId: string;
                         }[];
                         id: string;
@@ -401,12 +404,13 @@ export declare const app: Elysia<"", {
                         radius: number;
                         triggerHour: number;
                         triggerMinute: number;
-                        freeSpace: number;
                         latitude: number | null;
                         longitude: number | null;
                         street: string | null;
                         streetNumber: string | null;
-                        userId: string;
+                        freeSpace: number | null;
+                        userId: string | null;
+                        groupId: string | null;
                     };
                 };
                 401: string;
@@ -431,11 +435,11 @@ export declare const app: Elysia<"", {
                     radius?: number | undefined;
                     triggerHour?: number | undefined;
                     triggerMinute?: number | undefined;
-                    freeSpace?: number | undefined;
                     latitude?: number | null | undefined;
                     longitude?: number | null | undefined;
                     street?: string | null | undefined;
                     streetNumber?: string | null | undefined;
+                    freeSpace?: number | undefined;
                 };
                 params: {
                     id: string;
@@ -654,12 +658,13 @@ export declare const app: Elysia<"", {
                                 googleID: string | null;
                                 name: string;
                                 onboarding: boolean;
-                                createdAt: Date;
                                 fcmToken: string | null;
+                                createdAt: Date;
                             };
                         }[];
                         reminders: {
                             id: string;
+                            name: string;
                             createdAt: Date;
                             radius: number;
                             triggerHour: number;
@@ -668,8 +673,9 @@ export declare const app: Elysia<"", {
                             longitude: number | null;
                             street: string | null;
                             streetNumber: string | null;
-                            groupId: string;
-                            title: string;
+                            freeSpace: number | null;
+                            userId: string | null;
+                            groupId: string | null;
                         }[];
                     };
                 };
@@ -711,12 +717,22 @@ export declare const app: Elysia<"", {
                                 googleID: string | null;
                                 name: string;
                                 onboarding: boolean;
-                                createdAt: Date;
                                 fcmToken: string | null;
+                                createdAt: Date;
                             };
                         }[];
                         reminders: {
+                            items: {
+                                id: string;
+                                name: string;
+                                description: string | null;
+                                imageUrl: string | null;
+                                checkedBy: string | null;
+                                checkedAt: Date | null;
+                                routineId: string;
+                            }[];
                             id: string;
+                            name: string;
                             createdAt: Date;
                             radius: number;
                             triggerHour: number;
@@ -725,8 +741,9 @@ export declare const app: Elysia<"", {
                             longitude: number | null;
                             street: string | null;
                             streetNumber: string | null;
-                            groupId: string;
-                            title: string;
+                            freeSpace: number | null;
+                            userId: string | null;
+                            groupId: string | null;
                         }[];
                     }[];
                 };
@@ -807,6 +824,11 @@ export declare const app: Elysia<"", {
         reminders: {
             post: {
                 body: {
+                    items?: {
+                        description?: string | null | undefined;
+                        imageUrl?: string | null | undefined;
+                        name: string;
+                    }[] | undefined;
                     radius?: number | undefined;
                     triggerHour?: number | undefined;
                     triggerMinute?: number | undefined;
@@ -822,7 +844,30 @@ export declare const app: Elysia<"", {
                 headers: unknown;
                 response: {
                     200: {
-                        reminder: any;
+                        reminder: {
+                            items: {
+                                id: string;
+                                name: string;
+                                description: string | null;
+                                imageUrl: string | null;
+                                checkedBy: string | null;
+                                checkedAt: Date | null;
+                                routineId: string;
+                            }[];
+                            id: string;
+                            name: string;
+                            createdAt: Date;
+                            radius: number;
+                            triggerHour: number;
+                            triggerMinute: number;
+                            latitude: number | null;
+                            longitude: number | null;
+                            street: string | null;
+                            streetNumber: string | null;
+                            freeSpace: number | null;
+                            userId: string | null;
+                            groupId: string | null;
+                        };
                     };
                     401: string;
                     403: string;
@@ -893,6 +938,81 @@ export declare const app: Elysia<"", {
                         found?: unknown;
                         property?: string;
                         expected?: string;
+                    };
+                };
+            };
+        };
+    };
+} & {
+    groups: {
+        reminders: {
+            ":reminderId": {
+                items: {
+                    ":itemId": {
+                        patch: {
+                            body: unknown;
+                            params: {
+                                itemId: string;
+                                reminderId: string;
+                            };
+                            query: unknown;
+                            headers: unknown;
+                            response: {
+                                200: {
+                                    item: {
+                                        id: string;
+                                        name: string;
+                                        description: string | null;
+                                        imageUrl: string | null;
+                                        checkedBy: string | null;
+                                        checkedAt: Date | null;
+                                        routineId: string;
+                                    };
+                                };
+                                401: "Unauthorized" | "Invalid token";
+                                422: {
+                                    type: "validation";
+                                    on: string;
+                                    summary?: string;
+                                    message?: string;
+                                    found?: unknown;
+                                    property?: string;
+                                    expected?: string;
+                                };
+                            };
+                        };
+                    };
+                };
+            };
+        };
+    };
+} & {
+    groups: {
+        reminders: {
+            ":reminderId": {
+                reset: {
+                    delete: {
+                        body: unknown;
+                        params: {
+                            reminderId: string;
+                        } & {};
+                        query: unknown;
+                        headers: unknown;
+                        response: {
+                            200: {
+                                ok: boolean;
+                            };
+                            401: "Unauthorized" | "Invalid token";
+                            422: {
+                                type: "validation";
+                                on: string;
+                                summary?: string;
+                                message?: string;
+                                found?: unknown;
+                                property?: string;
+                                expected?: string;
+                            };
+                        };
                     };
                 };
             };

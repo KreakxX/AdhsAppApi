@@ -3,8 +3,9 @@ import Elysia, { t } from "elysia";
 import { db } from "../../db.ts";
 import { groupPlain } from "@/generated/prismabox/group.ts";
 import { groupMemberPlain } from "@/generated/prismabox/groupMember.ts";
-import { sharedReminderPlain } from "@/generated/prismabox/sharedReminder.ts";
 import { userPlain } from "@/generated/prismabox/user.ts";
+import { routinePlain } from "@/generated/prismabox/routine.ts";
+import { routineItem, routineItemPlain } from "@/generated/prismabox/routineItem.ts";
 
 const jwtGuard = new Elysia({ name: "jwtGuard" }).use(
   jwt({ name: "jwt", secret: process.env.JWT_SECRET! })
@@ -36,7 +37,7 @@ export const groupRoutes = new Elysia({ prefix: "/groups" })
         user: true, 
       },
     },
-    reminders: true,
+    reminders: true
   },
 });
 
@@ -47,7 +48,7 @@ export const groupRoutes = new Elysia({ prefix: "/groups" })
       emoji: t.Optional(t.String()),
     }),
     response: {
-200: t.Object({ group: t.Composite([groupPlain, t.Object({ reminders: t.Array(sharedReminderPlain) }), t.Object({ members: t.Array(t.Composite([groupMemberPlain, t.Object({ user: userPlain })])) })]) }),
+200: t.Object({ group: t.Composite([groupPlain, t.Object({ reminders: t.Array(routinePlain) }), t.Object({ members: t.Array(t.Composite([groupMemberPlain, t.Object({ user: userPlain })])) })]) }),
  401: t.String(),
     },
   })
@@ -63,7 +64,11 @@ export const groupRoutes = new Elysia({ prefix: "/groups" })
             user: true
           }
         },
-        reminders: true,
+       reminders: {
+      include:{
+       items: true
+      }
+    },
       },
       orderBy: { createdAt: "desc" },
     });
@@ -71,7 +76,29 @@ export const groupRoutes = new Elysia({ prefix: "/groups" })
     return { groups };
   }, {
     response: {
-      200: t.Object({ groups: t.Array( t.Composite([groupPlain, t.Object({ reminders: t.Array(sharedReminderPlain) }), t.Object({ members: t.Array(t.Composite([groupMemberPlain, t.Object({ user: userPlain })])) })]))}),
+ 200: t.Object({
+    groups: t.Array(
+      t.Composite([
+        groupPlain,
+        t.Object({
+          reminders: t.Array(
+            t.Composite([
+              routinePlain,
+              t.Object({ items: t.Array(routineItemPlain) }), 
+            ])
+          ),
+        }),
+        t.Object({
+          members: t.Array(
+            t.Composite([
+              groupMemberPlain,
+              t.Object({ user: userPlain }),
+            ])
+          ),
+        }),
+      ])
+    ),
+  }),
       401: t.String(),
     },
   })
@@ -139,9 +166,9 @@ export const groupRoutes = new Elysia({ prefix: "/groups" })
 
     if (!membership) return status(403, "Nicht Mitglied dieser Gruppe");
 
-    const reminder = await db.sharedReminder.create({
+    const reminder = await db.routine.create({
       data: {
-        title:         body.title,
+        name:         body.title,
         radius:        body.radius        ?? 80,
         triggerHour:   body.triggerHour   ?? 0,
         triggerMinute: body.triggerMinute ?? 0,
@@ -150,7 +177,16 @@ export const groupRoutes = new Elysia({ prefix: "/groups" })
         street:        body.street,
         streetNumber:  body.streetNumber,
         groupId:       body.groupId,
-      },
+        items: body.items?.length ? {
+        create: body.items.map((item) => ({
+          name:        item.name,
+          description: item.description ?? null,
+          imageUrl:    item.imageUrl    ?? null,
+        })),
+      } : undefined,
+    },
+    include: { items: true },
+    
     });
 
     return { reminder };
@@ -165,20 +201,31 @@ export const groupRoutes = new Elysia({ prefix: "/groups" })
       longitude:     t.Optional(t.Nullable(t.Number())),
       street:        t.Optional(t.Nullable(t.String())),
       streetNumber:  t.Optional(t.Nullable(t.String())),
+      items: t.Optional(t.Array(t.Object({
+      name:        t.String(),
+      description: t.Optional(t.Nullable(t.String())),
+      imageUrl:    t.Optional(t.Nullable(t.String())),
+    }))),
     }),
     response: {
-      200: t.Object({ reminder: t.Any() }),
-      401: t.String(),
+ 200: t.Object({
+      reminder: t.Composite([
+        routinePlain,
+        t.Object({ items: t.Array(routineItemPlain) }), 
+      ]),
+    }),      401: t.String(),
       403: t.String(),
     },
   })
 
   .delete("/reminders", async ({ userId, body, status }) => {
-    const reminder = await db.sharedReminder.findUnique({
+    const reminder = await db.routine.findUnique({
       where: { id: body.reminderId },
     });
 
     if (!reminder) return status(404, "Erinnerung nicht gefunden");
+
+    if(!reminder.groupId) return status(404, "Erinnerung nicht in der Gruppe gefunden");
 
     const membership = await db.groupMember.findUnique({
       where: { groupId_userId: { groupId: reminder.groupId, userId } },
@@ -186,7 +233,7 @@ export const groupRoutes = new Elysia({ prefix: "/groups" })
 
     if (!membership) return status(403, "Nicht Mitglied dieser Gruppe");
 
-    await db.sharedReminder.delete({ where: { id: body.reminderId } });
+    await db.routine.delete({ where: { id: body.reminderId } });
 
     return { message: "Erinnerung gelöscht" };
   }, {
@@ -218,4 +265,23 @@ export const groupRoutes = new Elysia({ prefix: "/groups" })
       401: t.String(),
       403: t.String(),
     },
+  })
+.patch("/reminders/:reminderId/items/:itemId", async ({ userId, params }) => {
+  const item = await db.routineItem.update({
+    where: { id: params.itemId },
+    data: {
+      checkedBy: userId,
+      checkedAt: new Date(),
+    },
   });
+  return { item };
+}, {
+  params: t.Object({ reminderId: t.String(), itemId: t.String() }),
+})
+.delete("/reminders/:reminderId/reset", async ({ params }) => {
+  await db.routineItem.updateMany({
+    where: { routineId: params.reminderId },
+    data: { checkedBy: null, checkedAt: null },
+  });
+  return { ok: true };
+})
