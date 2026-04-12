@@ -47,30 +47,7 @@ export const routineRoutes = new Elysia({ prefix: "/routines" })
   }, {
     params: t.Object({ id: t.String() }),
     response: {
-      200: t.Object({
-        routine: t.Object({
-          id:            t.String(),
-          name:          t.String(),
-          radius:        t.Number(),
-          triggerHour:   t.Number(),
-          triggerMinute: t.Number(),
-          freeSpace:     t.Number(),
-          latitude:      t.Nullable(t.Number()),
-          longitude:     t.Nullable(t.Number()),
-          street:        t.Nullable(t.String()),
-          streetNumber:  t.Nullable(t.String()),
-          createdAt:     t.Date(),
-          userId:        t.String(),
-          items: t.Array(t.Object({
-            id:          t.String(),
-            name:        t.String(),
-            description: t.Nullable(t.String()),
-            imageUrl:    t.Nullable(t.String()),
-            checked:     t.Boolean(),
-            routineId:   t.String(),
-          })),
-        }),
-      }),
+      200: t.Object({routine: routinePlain}),
       401: t.String(),
       403: t.String(),
       404: t.String(),
@@ -95,7 +72,6 @@ export const routineRoutes = new Elysia({ prefix: "/routines" })
               name:        item.name,
               description: item.description,
               imageUrl:    item.imageUrl,
-              checked:     false,
             })) }
           : undefined,
       },
@@ -197,13 +173,13 @@ export const routineRoutes = new Elysia({ prefix: "/routines" })
 
     const item = await db.routineItem.update({
       where: { id: params.itemId },
-      data:  { checked: body.checked },
+      data:  { checkedAt: new Date, checkedBy: body.checkedBy },
     });
 
     return { item };
   }, {
     params: t.Object({ id: t.String(), itemId: t.String() }),
-    body:   t.Object({ checked: t.Boolean() }),
+    body:   t.Object({ checkedBy: t.String() }),
     response: {
       200: t.Object({ item: t.Any() }),
       401: t.String(),

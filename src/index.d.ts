@@ -326,14 +326,6 @@ export declare const app: Elysia<"", {
                 response: {
                     200: {
                         routine: {
-                            items: {
-                                id: string;
-                                name: string;
-                                description: string | null;
-                                imageUrl: string | null;
-                                routineId: string;
-                                checked: boolean;
-                            }[];
                             id: string;
                             name: string;
                             createdAt: Date;
@@ -344,8 +336,9 @@ export declare const app: Elysia<"", {
                             longitude: number | null;
                             street: string | null;
                             streetNumber: string | null;
-                            freeSpace: number;
-                            userId: string;
+                            freeSpace: number | null;
+                            userId: string | null;
+                            groupId: string | null;
                         };
                     };
                     404: string;
@@ -503,7 +496,7 @@ export declare const app: Elysia<"", {
                 ":itemId": {
                     patch: {
                         body: {
-                            checked: boolean;
+                            checkedBy: string;
                         };
                         params: {
                             id: string;
@@ -646,6 +639,30 @@ export declare const app: Elysia<"", {
                         id: string;
                         name: string;
                         createdAt: Date;
+                        routines: {
+                            items: {
+                                id: string;
+                                name: string;
+                                description: string | null;
+                                imageUrl: string | null;
+                                checkedBy: string | null;
+                                checkedAt: Date | null;
+                                routineId: string;
+                            }[];
+                            id: string;
+                            name: string;
+                            createdAt: Date;
+                            radius: number;
+                            triggerHour: number;
+                            triggerMinute: number;
+                            latitude: number | null;
+                            longitude: number | null;
+                            street: string | null;
+                            streetNumber: string | null;
+                            freeSpace: number | null;
+                            userId: string | null;
+                            groupId: string | null;
+                        }[];
                         inviteCode: string;
                         members: {
                             id: string;
@@ -661,21 +678,6 @@ export declare const app: Elysia<"", {
                                 fcmToken: string | null;
                                 createdAt: Date;
                             };
-                        }[];
-                        reminders: {
-                            id: string;
-                            name: string;
-                            createdAt: Date;
-                            radius: number;
-                            triggerHour: number;
-                            triggerMinute: number;
-                            latitude: number | null;
-                            longitude: number | null;
-                            street: string | null;
-                            streetNumber: string | null;
-                            freeSpace: number | null;
-                            userId: string | null;
-                            groupId: string | null;
                         }[];
                     };
                 };
@@ -705,23 +707,7 @@ export declare const app: Elysia<"", {
                         id: string;
                         name: string;
                         createdAt: Date;
-                        inviteCode: string;
-                        members: {
-                            id: string;
-                            userId: string;
-                            groupId: string;
-                            user: {
-                                email: string;
-                                id: string;
-                                password: string | null;
-                                googleID: string | null;
-                                name: string;
-                                onboarding: boolean;
-                                fcmToken: string | null;
-                                createdAt: Date;
-                            };
-                        }[];
-                        reminders: {
+                        routines: {
                             items: {
                                 id: string;
                                 name: string;
@@ -744,6 +730,22 @@ export declare const app: Elysia<"", {
                             freeSpace: number | null;
                             userId: string | null;
                             groupId: string | null;
+                        }[];
+                        inviteCode: string;
+                        members: {
+                            id: string;
+                            userId: string;
+                            groupId: string;
+                            user: {
+                                email: string;
+                                id: string;
+                                password: string | null;
+                                googleID: string | null;
+                                name: string;
+                                onboarding: boolean;
+                                fcmToken: string | null;
+                                createdAt: Date;
+                            };
                         }[];
                     }[];
                 };
@@ -836,8 +838,9 @@ export declare const app: Elysia<"", {
                     longitude?: number | null | undefined;
                     street?: string | null | undefined;
                     streetNumber?: string | null | undefined;
+                    freeSpace?: number | null | undefined;
+                    name: string;
                     groupId: string;
-                    title: string;
                 };
                 params: {};
                 query: unknown;

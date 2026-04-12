@@ -37,8 +37,11 @@ export const groupRoutes = new Elysia({ prefix: "/groups" })
         user: true, 
       },
     },
-    reminders: true
-  },
+routines: {
+      include:{
+       items: true
+      }
+    },  },
 });
 
     return { group };
@@ -48,8 +51,28 @@ export const groupRoutes = new Elysia({ prefix: "/groups" })
       emoji: t.Optional(t.String()),
     }),
     response: {
-200: t.Object({ group: t.Composite([groupPlain, t.Object({ reminders: t.Array(routinePlain) }), t.Object({ members: t.Array(t.Composite([groupMemberPlain, t.Object({ user: userPlain })])) })]) }),
- 401: t.String(),
+200: t.Object({
+    group: 
+      t.Composite([
+        groupPlain,
+        t.Object({
+          routines: t.Array(
+            t.Composite([
+              routinePlain,
+              t.Object({ items: t.Array(routineItemPlain) }), 
+            ])
+          ),
+        }),
+        t.Object({
+          members: t.Array(
+            t.Composite([
+              groupMemberPlain,
+              t.Object({ user: userPlain }),
+            ])
+          ),
+        }),
+      ])
+  }), 401: t.String(),
     },
   })
 
@@ -64,7 +87,7 @@ export const groupRoutes = new Elysia({ prefix: "/groups" })
             user: true
           }
         },
-       reminders: {
+       routines: {
       include:{
        items: true
       }
@@ -81,7 +104,7 @@ export const groupRoutes = new Elysia({ prefix: "/groups" })
       t.Composite([
         groupPlain,
         t.Object({
-          reminders: t.Array(
+          routines: t.Array(
             t.Composite([
               routinePlain,
               t.Object({ items: t.Array(routineItemPlain) }), 
@@ -120,7 +143,7 @@ export const groupRoutes = new Elysia({ prefix: "/groups" })
 
     const updated = await db.group.findUnique({
       where:   { id: group.id },
-      include: { members: true, reminders: true },
+      include: { members: true, routines: true },
     });
 
     return { group: updated };
@@ -168,12 +191,13 @@ export const groupRoutes = new Elysia({ prefix: "/groups" })
 
     const reminder = await db.routine.create({
       data: {
-        name:         body.title,
+        name:         body.name,
         radius:        body.radius        ?? 80,
         triggerHour:   body.triggerHour   ?? 0,
         triggerMinute: body.triggerMinute ?? 0,
         latitude:      body.latitude,
         longitude:     body.longitude,
+        freeSpace:     body.freeSpace,
         street:        body.street,
         streetNumber:  body.streetNumber,
         groupId:       body.groupId,
@@ -192,14 +216,15 @@ export const groupRoutes = new Elysia({ prefix: "/groups" })
     return { reminder };
   }, {
     body: t.Object({
+      name: t.String(),
       groupId:       t.String(),
-      title:         t.String(),
       radius:        t.Optional(t.Number()),
       triggerHour:   t.Optional(t.Number()),
       triggerMinute: t.Optional(t.Number()),
       latitude:      t.Optional(t.Nullable(t.Number())),
       longitude:     t.Optional(t.Nullable(t.Number())),
       street:        t.Optional(t.Nullable(t.String())),
+      freeSpace:      t.Optional(t.Nullable(t.Number())),
       streetNumber:  t.Optional(t.Nullable(t.String())),
       items: t.Optional(t.Array(t.Object({
       name:        t.String(),
