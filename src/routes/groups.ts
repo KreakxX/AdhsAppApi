@@ -201,6 +201,7 @@ routines: {
         street:        body.street,
         streetNumber:  body.streetNumber,
         groupId:       body.groupId,
+        userId: userId,
         items: body.items?.length ? {
         create: body.items.map((item) => ({
           name:        item.name,
