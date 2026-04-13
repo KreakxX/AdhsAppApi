@@ -136,6 +136,8 @@ export declare const authRoutes: Elysia<"/auth", {
                             name: string;
                             onboarding: boolean;
                             fcmToken: string | null;
+                            twoFactorCode: string | null;
+                            twoFactorExpiresAt: Date | null;
                             createdAt: Date;
                         };
                     };
@@ -239,6 +241,64 @@ export declare const authRoutes: Elysia<"/auth", {
                             property?: string;
                             expected?: string;
                         };
+                    };
+                };
+            };
+        };
+    };
+} & {
+    auth: {
+        "send-code": {
+            post: {
+                body: {
+                    email: string;
+                };
+                params: {};
+                query: unknown;
+                headers: unknown;
+                response: {
+                    200: {
+                        sent: boolean;
+                    };
+                    404: string;
+                    422: {
+                        type: "validation";
+                        on: string;
+                        summary?: string;
+                        message?: string;
+                        found?: unknown;
+                        property?: string;
+                        expected?: string;
+                    };
+                };
+            };
+        };
+    };
+} & {
+    auth: {
+        "verify-code": {
+            post: {
+                body: {
+                    email: string;
+                    code: string;
+                };
+                params: {};
+                query: unknown;
+                headers: unknown;
+                response: {
+                    200: {
+                        jwt: string;
+                    };
+                    404: string;
+                    400: string;
+                    422: {
+                        type: "validation";
+                        on: string;
+                        summary?: string;
+                        message?: string;
+                        found?: unknown;
+                        property?: string;
+                        expected?: string;
                     };
                 };
             };

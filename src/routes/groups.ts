@@ -200,6 +200,7 @@ routines: {
         freeSpace:     body.freeSpace,
         street:        body.street,
         streetNumber:  body.streetNumber,
+        triggerOnExit: body.triggerOnExit,
         groupId:       body.groupId,
         userId: userId,
         items: body.items?.length ? {
@@ -222,6 +223,7 @@ routines: {
       radius:        t.Optional(t.Number()),
       triggerHour:   t.Optional(t.Number()),
       triggerMinute: t.Optional(t.Number()),
+      triggerOnExit: t.Optional(t.Boolean()), 
       latitude:      t.Optional(t.Nullable(t.Number())),
       longitude:     t.Optional(t.Nullable(t.Number())),
       street:        t.Optional(t.Nullable(t.String())),
@@ -231,6 +233,7 @@ routines: {
       name:        t.String(),
       description: t.Optional(t.Nullable(t.String())),
       imageUrl:    t.Optional(t.Nullable(t.String())),
+      
     }))),
     }),
     response: {

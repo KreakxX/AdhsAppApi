@@ -18,14 +18,16 @@ datasource db {
 }
 
 model user {
-  id         String   @id @default(uuid())
-  email      String   @unique
-  password   String?
-  googleID   String?  @unique
-  name       String
-  onboarding Boolean  @default(false)
-  fcmToken   String?
-  createdAt  DateTime @default(now())
+  id                 String    @id @default(uuid())
+  email              String    @unique
+  password           String?
+  googleID           String?   @unique
+  name               String
+  onboarding         Boolean   @default(false)
+  fcmToken           String?
+  twoFactorCode      String?
+  twoFactorExpiresAt DateTime?
+  createdAt          DateTime  @default(now())
 
   routines routine[]
   groups   groupMember[]
@@ -37,6 +39,7 @@ model routine {
   radius        Int      @default(50)
   triggerHour   Int      @default(0)
   triggerMinute Int      @default(0)
+  triggerOnExit Boolean  @default(false)
   latitude      Float?
   longitude     Float?
   street        String?

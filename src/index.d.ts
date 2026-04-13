@@ -156,6 +156,8 @@ export declare const app: Elysia<"", {
                             name: string;
                             onboarding: boolean;
                             fcmToken: string | null;
+                            twoFactorCode: string | null;
+                            twoFactorExpiresAt: Date | null;
                             createdAt: Date;
                         };
                     };
@@ -265,6 +267,64 @@ export declare const app: Elysia<"", {
         };
     };
 } & {
+    auth: {
+        "send-code": {
+            post: {
+                body: {
+                    email: string;
+                };
+                params: {};
+                query: unknown;
+                headers: unknown;
+                response: {
+                    200: {
+                        sent: boolean;
+                    };
+                    404: string;
+                    422: {
+                        type: "validation";
+                        on: string;
+                        summary?: string;
+                        message?: string;
+                        found?: unknown;
+                        property?: string;
+                        expected?: string;
+                    };
+                };
+            };
+        };
+    };
+} & {
+    auth: {
+        "verify-code": {
+            post: {
+                body: {
+                    email: string;
+                    code: string;
+                };
+                params: {};
+                query: unknown;
+                headers: unknown;
+                response: {
+                    200: {
+                        jwt: string;
+                    };
+                    404: string;
+                    400: string;
+                    422: {
+                        type: "validation";
+                        on: string;
+                        summary?: string;
+                        message?: string;
+                        found?: unknown;
+                        property?: string;
+                        expected?: string;
+                    };
+                };
+            };
+        };
+    };
+} & {
     routines: {};
 } & {
     routines: {
@@ -291,6 +351,7 @@ export declare const app: Elysia<"", {
                         radius: number;
                         triggerHour: number;
                         triggerMinute: number;
+                        triggerOnExit: boolean;
                         latitude: number | null;
                         longitude: number | null;
                         street: string | null;
@@ -332,6 +393,7 @@ export declare const app: Elysia<"", {
                             radius: number;
                             triggerHour: number;
                             triggerMinute: number;
+                            triggerOnExit: boolean;
                             latitude: number | null;
                             longitude: number | null;
                             street: string | null;
@@ -369,6 +431,7 @@ export declare const app: Elysia<"", {
                 radius?: number | undefined;
                 triggerHour?: number | undefined;
                 triggerMinute?: number | undefined;
+                triggerOnExit?: boolean | undefined;
                 latitude?: number | null | undefined;
                 longitude?: number | null | undefined;
                 street?: string | null | undefined;
@@ -397,6 +460,7 @@ export declare const app: Elysia<"", {
                         radius: number;
                         triggerHour: number;
                         triggerMinute: number;
+                        triggerOnExit: boolean;
                         latitude: number | null;
                         longitude: number | null;
                         street: string | null;
@@ -655,6 +719,7 @@ export declare const app: Elysia<"", {
                             radius: number;
                             triggerHour: number;
                             triggerMinute: number;
+                            triggerOnExit: boolean;
                             latitude: number | null;
                             longitude: number | null;
                             street: string | null;
@@ -676,6 +741,8 @@ export declare const app: Elysia<"", {
                                 name: string;
                                 onboarding: boolean;
                                 fcmToken: string | null;
+                                twoFactorCode: string | null;
+                                twoFactorExpiresAt: Date | null;
                                 createdAt: Date;
                             };
                         }[];
@@ -723,6 +790,7 @@ export declare const app: Elysia<"", {
                             radius: number;
                             triggerHour: number;
                             triggerMinute: number;
+                            triggerOnExit: boolean;
                             latitude: number | null;
                             longitude: number | null;
                             street: string | null;
@@ -744,6 +812,8 @@ export declare const app: Elysia<"", {
                                 name: string;
                                 onboarding: boolean;
                                 fcmToken: string | null;
+                                twoFactorCode: string | null;
+                                twoFactorExpiresAt: Date | null;
                                 createdAt: Date;
                             };
                         }[];
@@ -834,6 +904,7 @@ export declare const app: Elysia<"", {
                     radius?: number | undefined;
                     triggerHour?: number | undefined;
                     triggerMinute?: number | undefined;
+                    triggerOnExit?: boolean | undefined;
                     latitude?: number | null | undefined;
                     longitude?: number | null | undefined;
                     street?: string | null | undefined;
@@ -863,6 +934,7 @@ export declare const app: Elysia<"", {
                             radius: number;
                             triggerHour: number;
                             triggerMinute: number;
+                            triggerOnExit: boolean;
                             latitude: number | null;
                             longitude: number | null;
                             street: string | null;
