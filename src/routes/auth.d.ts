@@ -58,7 +58,13 @@ export declare const authRoutes: Elysia<"/auth", {
             } & Omit<import("@elysiajs/jwt").JWTPayloadSpec, never>)>;
         };
     };
-    store: {};
+    store: {
+        cache: {
+            get: <T = any>(key: string) => Promise<T | null>;
+            set: (key: string, data: any, ttlSeconds?: number) => Promise<boolean>;
+            del: (key: string) => Promise<boolean>;
+        };
+    };
     derive: {};
     resolve: {};
 }, {
@@ -116,12 +122,40 @@ export declare const authRoutes: Elysia<"/auth", {
     };
 } & {
     auth: {
+        "register-code": {
+            post: {
+                body: {
+                    email: string;
+                };
+                params: {};
+                query: unknown;
+                headers: unknown;
+                response: {
+                    200: {
+                        status: boolean;
+                    };
+                    422: {
+                        type: "validation";
+                        on: string;
+                        summary?: string;
+                        message?: string;
+                        found?: unknown;
+                        property?: string;
+                        expected?: string;
+                    };
+                };
+            };
+        };
+    };
+} & {
+    auth: {
         register: {
             post: {
                 body: {
                     email: string;
                     password: string;
                     name: string;
+                    code: string;
                 };
                 params: {};
                 query: unknown;
@@ -311,6 +345,12 @@ export declare const authRoutes: Elysia<"/auth", {
     standaloneSchema: {};
     response: {};
 }, {
+    derive: {};
+    resolve: {};
+    schema: {};
+    standaloneSchema: {};
+    response: {};
+} & {
     derive: {};
     resolve: {};
     schema: {};
