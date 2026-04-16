@@ -6,8 +6,12 @@ import { groupMemberPlain } from "@/generated/prismabox/groupMember.ts";
 import { userPlain } from "@/generated/prismabox/user.ts";
 import { routinePlain } from "@/generated/prismabox/routine.ts";
 import { routineItem, routineItemPlain } from "@/generated/prismabox/routineItem.ts";
+import { getCachedOrFetch } from "../types.ts";
+import { dragonFlyCache } from "../cache.ts";
 
-const jwtGuard = new Elysia({ name: "jwtGuard" }).use(
+const groupsKey = (userId: string) => `groups:${userId}`;
+
+const jwtGuard = new Elysia({ name: "jwtGuard" }).use(dragonFlyCache).use(
   jwt({ name: "jwt", secret: process.env.JWT_SECRET! })
 ).derive({ as: "scoped" }, async ({ jwt, headers, status }) => {
   const auth = headers.authorization;
@@ -23,7 +27,7 @@ const jwtGuard = new Elysia({ name: "jwtGuard" }).use(
 export const groupRoutes = new Elysia({ prefix: "/groups" })
   .use(jwtGuard)
 
-  .post("/", async ({ userId, body }) => {
+  .post("/", async ({ userId, body,store }) => {
     const group = await db.group.create({
   data: {
     name: body.name,
@@ -42,7 +46,20 @@ routines: {
        items: true
       }
     },  },
-});
+}); 
+
+  const groups = await db.group.findMany({
+    where: {
+      members: { some: { userId } },
+    },
+    include: {
+      members: { include: { user: true } },
+      routines: { include: { items: true } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  await store.cache.set(groupsKey(userId), { groups });
 
     return { group };
   }, {
@@ -76,28 +93,31 @@ routines: {
     },
   })
 
-  .get("/", async ({ userId }) => {
-    const groups = await db.group.findMany({
-      where: {
-        members: { some: { userId } },
-      },
-      include: {
-        members: {
-          include:{
-            user: true
-          }
+ .get("/", async ({ userId, store }) => {
+  return getCachedOrFetch(
+    groupsKey(userId),
+    async () => {
+      const groups = await db.group.findMany({
+        where: {
+          members: { some: { userId } },
         },
-       routines: {
-      include:{
-       items: true
-      }
-    },
-      },
-      orderBy: { createdAt: "desc" },
-    });
+        include: {
+          members: {
+            include: { user: true },
+          },
+          routines: {
+            include: { items: true },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      });
 
-    return { groups };
-  }, {
+      return { groups };
+    },
+    store,
+    300
+  );
+}, {
     response: {
  200: t.Object({
     groups: t.Array(
@@ -126,7 +146,7 @@ routines: {
     },
   })
 
-  .post("/join", async ({ userId, body, status }) => {
+  .post("/join", async ({ userId, body, status,store }) => {
     const group = await db.group.findUnique({
       where:   { inviteCode: body.inviteCode },
       include: { members: true },
@@ -146,6 +166,19 @@ routines: {
       include: { members: true, routines: true },
     });
 
+     const groups = await db.group.findMany({
+    where: {
+      members: { some: { userId } },
+    },
+    include: {
+      members: { include: { user: true } },
+      routines: { include: { items: true } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  await store.cache.set(groupsKey(userId), { groups });
+
     return { group: updated };
   }, {
     body: t.Object({
@@ -159,7 +192,7 @@ routines: {
     },
   })
 
-  .delete("/leave", async ({ userId, body, status }) => {
+  .delete("/leave", async ({ userId, body, status,store }) => {
     const membership = await db.groupMember.findUnique({
       where: { groupId_userId: { groupId: body.groupId, userId } },
     });
@@ -169,6 +202,19 @@ routines: {
     await db.groupMember.delete({
       where: { groupId_userId: { groupId: body.groupId, userId } },
     });
+
+     const groups = await db.group.findMany({
+    where: {
+      members: { some: { userId } },
+    },
+    include: {
+      members: { include: { user: true } },
+      routines: { include: { items: true } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  await store.cache.set(groupsKey(userId), { groups });
 
     return { message: "Gruppe verlassen" };
   }, {
@@ -182,7 +228,7 @@ routines: {
     },
   })
 
-  .post("/reminders", async ({ userId, body, status }) => {
+  .post("/reminders", async ({ userId, body, status,store }) => {
     const membership = await db.groupMember.findUnique({
       where: { groupId_userId: { groupId: body.groupId, userId } },
     });
@@ -214,6 +260,19 @@ routines: {
     include: { items: true },
     
     });
+
+     const groups = await db.group.findMany({
+    where: {
+      members: { some: { userId } },
+    },
+    include: {
+      members: { include: { user: true } },
+      routines: { include: { items: true } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  await store.cache.set(groupsKey(userId), { groups });
 
     return { reminder };
   }, {
@@ -247,7 +306,7 @@ routines: {
     },
   })
 
-  .delete("/reminders", async ({ userId, body, status }) => {
+  .delete("/reminders", async ({ userId, body, status,store }) => {
     const reminder = await db.routine.findUnique({
       where: { id: body.reminderId },
     });
@@ -266,6 +325,19 @@ routines: {
 
     await db.routine.delete({ where: { id: body.reminderId } });
 
+     const groups = await db.group.findMany({
+    where: {
+      members: { some: { userId } },
+    },
+    include: {
+      members: { include: { user: true } },
+      routines: { include: { items: true } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  await store.cache.set(groupsKey(userId), { groups });
+
     return { message: "Erinnerung gelöscht" };
   }, {
     body: t.Object({
@@ -279,7 +351,7 @@ routines: {
     },
   })
 
-  .delete("/:id", async ({ userId, params, status }) => {
+  .delete("/:id", async ({ userId, params, status, store }) => {
     const membership = await db.groupMember.findUnique({
       where: { groupId_userId: { groupId: params.id, userId } },
     });
@@ -287,7 +359,18 @@ routines: {
     if (!membership) return status(403, "Nicht Mitglied dieser Gruppe");
 
     await db.group.delete({ where: { id: params.id } });
+     const groups = await db.group.findMany({
+    where: {
+      members: { some: { userId } },
+    },
+    include: {
+      members: { include: { user: true } },
+      routines: { include: { items: true } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
 
+  await store.cache.set(groupsKey(userId), { groups });
     return { message: "Gruppe gelöscht" };
   }, {
     params: t.Object({ id: t.String() }),
@@ -297,7 +380,7 @@ routines: {
       403: t.String(),
     },
   })
-.patch("/reminders/:reminderId/items/:itemId", async ({ userId, params, status }) => {
+.patch("/reminders/:reminderId/items/:itemId", async ({ userId, params, status,store }) => {
   const reminder = await db.routine.findUnique({
     where: { id: params.reminderId },
   });
@@ -317,6 +400,19 @@ routines: {
       checkedAt: new Date(),
     },
   });
+
+   const groups = await db.group.findMany({
+    where: {
+      members: { some: { userId } },
+    },
+    include: {
+      members: { include: { user: true } },
+      routines: { include: { items: true } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  await store.cache.set(groupsKey(userId), { groups });
 
   return { item };
 }, {
