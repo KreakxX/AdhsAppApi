@@ -8,6 +8,7 @@ import { routinePlain } from "@/generated/prismabox/routine.ts";
 import { routineItem, routineItemPlain } from "@/generated/prismabox/routineItem.ts";
 import { getCachedOrFetch } from "../types.ts";
 import { dragonFlyCache } from "../cache.ts";
+import superjson from 'superjson';
 
 const groupsKey = (userId: string) => `groups:${userId}`;
 
@@ -59,7 +60,7 @@ routines: {
     orderBy: { createdAt: "desc" },
   });
 
-  await store.cache.set(groupsKey(userId), { groups });
+  await store.cache.set(groupsKey(userId), superjson.stringify({groups: groups}));
 
     return { group };
   }, {
@@ -114,7 +115,7 @@ routines: {
 
       return { groups };
     },
-    store,
+    store.cache,
     300
   );
 }, {
@@ -177,7 +178,7 @@ routines: {
     orderBy: { createdAt: "desc" },
   });
 
-  await store.cache.set(groupsKey(userId), { groups });
+  await store.cache.set(groupsKey(userId), superjson.stringify({groups: groups}));
 
     return { group: updated };
   }, {
@@ -214,7 +215,7 @@ routines: {
     orderBy: { createdAt: "desc" },
   });
 
-  await store.cache.set(groupsKey(userId), { groups });
+  await store.cache.set(groupsKey(userId), superjson.stringify({groups: groups}));
 
     return { message: "Gruppe verlassen" };
   }, {
@@ -272,7 +273,7 @@ routines: {
     orderBy: { createdAt: "desc" },
   });
 
-  await store.cache.set(groupsKey(userId), { groups });
+  await store.cache.set(groupsKey(userId), superjson.stringify({groups: groups}));
 
     return { reminder };
   }, {
@@ -336,7 +337,7 @@ routines: {
     orderBy: { createdAt: "desc" },
   });
 
-  await store.cache.set(groupsKey(userId), { groups });
+  await store.cache.set(groupsKey(userId), superjson.stringify({groups: groups}));
 
     return { message: "Erinnerung gelöscht" };
   }, {
@@ -370,7 +371,7 @@ routines: {
     orderBy: { createdAt: "desc" },
   });
 
-  await store.cache.set(groupsKey(userId), { groups });
+  await store.cache.set(groupsKey(userId), superjson.stringify({groups: groups}));
     return { message: "Gruppe gelöscht" };
   }, {
     params: t.Object({ id: t.String() }),
@@ -412,7 +413,7 @@ routines: {
     orderBy: { createdAt: "desc" },
   });
 
-  await store.cache.set(groupsKey(userId), { groups });
+  await store.cache.set(groupsKey(userId), superjson.stringify({groups: groups}));
 
   return { item };
 }, {

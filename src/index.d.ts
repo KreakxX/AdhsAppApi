@@ -395,7 +395,7 @@ export declare const app: Elysia<"", {
                         groupId: string | null;
                     }[];
                 };
-                401: string;
+                401: "No Authorization Header found" | "Invalid or expired token";
                 422: {
                     type: "validation";
                     on: string;
@@ -421,6 +421,16 @@ export declare const app: Elysia<"", {
                 response: {
                     200: {
                         routine: {
+                            items: {
+                                id: string;
+                                name: string;
+                                description: string | null;
+                                imageUrl: string | null;
+                                checkedBy: string | null;
+                                checkedAt: Date | null;
+                                routineId: string;
+                            }[];
+                        } & {
                             id: string;
                             name: string;
                             createdAt: Date;
@@ -437,9 +447,7 @@ export declare const app: Elysia<"", {
                             groupId: string | null;
                         };
                     };
-                    404: string;
-                    401: string;
-                    403: string;
+                    401: "No Authorization Header found" | "Invalid or expired token";
                     422: {
                         type: "validation";
                         on: string;

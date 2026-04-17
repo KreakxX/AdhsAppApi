@@ -5,6 +5,7 @@ import { routinePlain } from "@/generated/prismabox/routine.ts";
 import { routineItem, routineItemPlain } from "@/generated/prismabox/routineItem.ts";
 import { dragonFlyCache } from "../cache.ts";
 import { getCachedOrFetch } from "../types.ts";
+import superjson from 'superjson';
 const jwtGuard = new Elysia({ name: "jwtGuard" }).use(dragonFlyCache).use(
   jwt({ name: "jwt", secret: process.env.JWT_SECRET! })
 ).derive({ as: "scoped" }, async ({ jwt, headers, status }) => {
@@ -33,7 +34,7 @@ export const routineRoutes = new Elysia({ prefix: "/routines" })
 
       return { routines };
     },
-    store,
+    store.cache,
     300 
   );
 }, {
@@ -63,7 +64,7 @@ export const routineRoutes = new Elysia({ prefix: "/routines" })
 
       return { routine };
     },
-    store,
+    store.cache,
     300
   );
 }, {
@@ -96,7 +97,7 @@ export const routineRoutes = new Elysia({ prefix: "/routines" })
     });
 
     const newRoutines = await db.routine.findMany({where: {userId: userId}, include: {items: true}})
-    await store.cache.set(`routines:${userId}`,{routines: newRoutines})
+    await store.cache.set(`routines:${userId}`, superjson.stringify({routines: newRoutines}))
 
     return { routine };
   }, {
@@ -146,7 +147,7 @@ export const routineRoutes = new Elysia({ prefix: "/routines" })
     });
 
     const newRoutines = await db.routine.findMany({where: {userId: userId}, include: {items: true}})
-    await store.cache.set(`routines:${userId}`,{routines: newRoutines})
+    await store.cache.set(`routines:${userId}`, superjson.stringify({routines: newRoutines}))
 
     return { routine };
   }, {
@@ -178,7 +179,7 @@ export const routineRoutes = new Elysia({ prefix: "/routines" })
 
     await db.routine.delete({ where: { id: params.id } });
     const newRoutines = await db.routine.findMany({where: {userId: userId}, include: {items: true}})
-    await store.cache.set(`routines:${userId}`,{routines: newRoutines})
+    await store.cache.set(`routines:${userId}`, superjson.stringify({routines: newRoutines}))
     return { message: "Routine deleted" };
   }, {
     params: t.Object({ id: t.String() }),
@@ -202,7 +203,7 @@ export const routineRoutes = new Elysia({ prefix: "/routines" })
     });
 
     const newRoutines = await db.routine.findMany({where: {userId: userId}, include: {items: true}})
-    await store.cache.set(`routines:${userId}`,{routines: newRoutines})
+    await store.cache.set(`routines:${userId}`, superjson.stringify({routines: newRoutines}))
     return { item };
   }, {
     params: t.Object({ id: t.String(), itemId: t.String() }),
@@ -223,7 +224,7 @@ export const routineRoutes = new Elysia({ prefix: "/routines" })
 
     await db.routineItem.delete({ where: { id: params.itemId } });
      const newRoutines = await db.routine.findMany({where: {userId: userId}, include: {items: true}})
-    await store.cache.set(`routines:${userId}`,{routines: newRoutines})
+    await store.cache.set(`routines:${userId}`, superjson.stringify({routines: newRoutines}))
     return { message: "Item deleted" };
   }, {
     params: t.Object({ id: t.String(), itemId: t.String() }),
