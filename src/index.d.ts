@@ -383,8 +383,8 @@ export declare const app: Elysia<"", {
                         name: string;
                         createdAt: Date;
                         radius: number;
-                        triggerHour: number;
-                        triggerMinute: number;
+                        triggerHour: number | null;
+                        triggerMinute: number | null;
                         triggerOnExit: boolean;
                         latitude: number | null;
                         longitude: number | null;
@@ -435,8 +435,8 @@ export declare const app: Elysia<"", {
                             name: string;
                             createdAt: Date;
                             radius: number;
-                            triggerHour: number;
-                            triggerMinute: number;
+                            triggerHour: number | null;
+                            triggerMinute: number | null;
                             triggerOnExit: boolean;
                             latitude: number | null;
                             longitude: number | null;
@@ -471,8 +471,8 @@ export declare const app: Elysia<"", {
                     name: string;
                 }[] | undefined;
                 radius?: number | undefined;
-                triggerHour?: number | undefined;
-                triggerMinute?: number | undefined;
+                triggerHour?: number | null | undefined;
+                triggerMinute?: number | null | undefined;
                 triggerOnExit?: boolean | undefined;
                 latitude?: number | null | undefined;
                 longitude?: number | null | undefined;
@@ -500,8 +500,8 @@ export declare const app: Elysia<"", {
                         name: string;
                         createdAt: Date;
                         radius: number;
-                        triggerHour: number;
-                        triggerMinute: number;
+                        triggerHour: number | null;
+                        triggerMinute: number | null;
                         triggerOnExit: boolean;
                         latitude: number | null;
                         longitude: number | null;
@@ -532,8 +532,8 @@ export declare const app: Elysia<"", {
                 body: {
                     name?: string | undefined;
                     radius?: number | undefined;
-                    triggerHour?: number | undefined;
-                    triggerMinute?: number | undefined;
+                    triggerHour?: number | null | undefined;
+                    triggerMinute?: number | null | undefined;
                     latitude?: number | null | undefined;
                     longitude?: number | null | undefined;
                     street?: string | null | undefined;
@@ -759,8 +759,8 @@ export declare const app: Elysia<"", {
                             name: string;
                             createdAt: Date;
                             radius: number;
-                            triggerHour: number;
-                            triggerMinute: number;
+                            triggerHour: number | null;
+                            triggerMinute: number | null;
                             triggerOnExit: boolean;
                             latitude: number | null;
                             longitude: number | null;
@@ -830,8 +830,8 @@ export declare const app: Elysia<"", {
                             name: string;
                             createdAt: Date;
                             radius: number;
-                            triggerHour: number;
-                            triggerMinute: number;
+                            triggerHour: number | null;
+                            triggerMinute: number | null;
                             triggerOnExit: boolean;
                             latitude: number | null;
                             longitude: number | null;
@@ -944,8 +944,8 @@ export declare const app: Elysia<"", {
                         name: string;
                     }[] | undefined;
                     radius?: number | undefined;
-                    triggerHour?: number | undefined;
-                    triggerMinute?: number | undefined;
+                    triggerHour?: number | null | undefined;
+                    triggerMinute?: number | null | undefined;
                     triggerOnExit?: boolean | undefined;
                     latitude?: number | null | undefined;
                     longitude?: number | null | undefined;
@@ -974,8 +974,8 @@ export declare const app: Elysia<"", {
                             name: string;
                             createdAt: Date;
                             radius: number;
-                            triggerHour: number;
-                            triggerMinute: number;
+                            triggerHour: number | null;
+                            triggerMinute: number | null;
                             triggerOnExit: boolean;
                             latitude: number | null;
                             longitude: number | null;

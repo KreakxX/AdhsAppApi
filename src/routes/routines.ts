@@ -104,8 +104,8 @@ export const routineRoutes = new Elysia({ prefix: "/routines" })
     body: t.Object({
       name:          t.String(),
       radius:        t.Optional(t.Number()),
-      triggerHour:   t.Optional(t.Number()),
-      triggerMinute: t.Optional(t.Number()),
+      triggerHour:   t.Optional(t.Nullable(t.Number())),
+      triggerMinute: t.Optional(t.Nullable(t.Number())),
       triggerOnExit: t.Optional(t.Boolean()), 
       freeSpace:     t.Optional(t.Number()),
       latitude:      t.Optional(t.Nullable(t.Number())),
@@ -155,8 +155,8 @@ export const routineRoutes = new Elysia({ prefix: "/routines" })
     body: t.Object({
       name:          t.Optional(t.String()),
       radius:        t.Optional(t.Number()),
-      triggerHour:   t.Optional(t.Number()),
-      triggerMinute: t.Optional(t.Number()),
+      triggerHour:   t.Optional(t.Nullable(t.Number())),
+      triggerMinute: t.Optional(t.Nullable(t.Number())),
       freeSpace:     t.Optional(t.Number()),
       latitude:      t.Optional(t.Nullable(t.Number())),
       longitude:     t.Optional(t.Nullable(t.Number())),

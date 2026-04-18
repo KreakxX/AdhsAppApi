@@ -37,8 +37,8 @@ model routine {
   id            String   @id @default(uuid())
   name          String
   radius        Int      @default(50)
-  triggerHour   Int      @default(0)
-  triggerMinute Int      @default(0)
+  triggerHour   Int?
+  triggerMinute Int?
   triggerOnExit Boolean  @default(false)
   latitude      Float?
   longitude     Float?
