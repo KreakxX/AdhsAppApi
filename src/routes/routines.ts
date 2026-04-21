@@ -157,7 +157,7 @@ export const routineRoutes = new Elysia({ prefix: "/routines" })
       radius:        t.Optional(t.Number()),
       triggerHour:   t.Optional(t.Nullable(t.Number())),
       triggerMinute: t.Optional(t.Nullable(t.Number())),
-      freeSpace:     t.Optional(t.Number()),
+      freeSpace:      t.Optional(t.Nullable(t.Number())),
       latitude:      t.Optional(t.Nullable(t.Number())),
       longitude:     t.Optional(t.Nullable(t.Number())),
       street:        t.Optional(t.Nullable(t.String())),

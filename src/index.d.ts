@@ -538,7 +538,7 @@ export declare const app: Elysia<"", {
                     longitude?: number | null | undefined;
                     street?: string | null | undefined;
                     streetNumber?: string | null | undefined;
-                    freeSpace?: number | undefined;
+                    freeSpace?: number | null | undefined;
                 };
                 params: {
                     id: string;
@@ -702,7 +702,8 @@ export declare const app: Elysia<"", {
         trigger: {
             post: {
                 body: {
-                    reminderId: string;
+                    message?: string | undefined;
+                    routineId: string;
                 };
                 params: {};
                 query: unknown;
@@ -713,6 +714,7 @@ export declare const app: Elysia<"", {
                         ok: boolean;
                     };
                     404: string;
+                    400: string;
                     401: string;
                     422: {
                         type: "validation";

@@ -30,40 +30,45 @@ export const notificationRoutes = new Elysia({ prefix: "/notifications" })
   })
 
   .post("/trigger", async ({ userId, body, status }) => {
-    const reminder = await db.sharedReminder.findUnique({
-      where:   { id: body.reminderId },
+    const routine = await db.routine.findUnique({
+      where: { id: body.routineId },
       include: {
         group: {
           include: {
-            members: { include: { user: true } },
+            members: {
+              include: { user: true },
+            },
           },
         },
       },
     });
 
-    if (!reminder) return status(404, "Reminder not found");
+    if (!routine) return status(404, "Routine not found");
+    if (!routine.group) return status(400, "Routine has no group");
 
     const triggeringUser = await db.user.findUnique({
       where: { id: userId },
     });
 
-    // everyone except the person who triggered it
-    const tokens = reminder.group.members
+    const tokens = routine.group.members
       .filter((m) => m.userId !== userId && m.user.fcmToken)
       .map((m) => m.user.fcmToken!);
 
     if (tokens.length === 0) return { ok: true, sent: 0 };
 
+    const notificationBody = body.message
+      ?? `${triggeringUser?.name} ist bei "${routine.name}". Schau nach ob du etwas brauchst!`;
+
     const result = await fcm.sendEachForMulticast({
       tokens,
       notification: {
-        title: `${reminder.group.name} 📍`,
-        body:  `${triggeringUser?.name} ist bei "${reminder.title}". Schau nach ob du etwas brauchst!`,
+        title: `${routine.group.name} 📍`,
+        body:  notificationBody,
       },
       data: {
-        groupId:    reminder.group.id,
-        reminderId: reminder.id,
-        type:       "GROUP_TRIGGER",
+        groupId:   routine.group.id,
+        routineId: routine.id,
+        type:      "GROUP_TRIGGER",
       },
       android: {
         priority: "high",
@@ -74,25 +79,36 @@ export const notificationRoutes = new Elysia({ prefix: "/notifications" })
       },
     });
 
-    result.responses.forEach(async (resp:any, i:any) => {
-      if (!resp.success && resp.error?.code === "messaging/invalid-registration-token") {
-        const member = reminder.group.members.filter(
-          (m) => m.userId !== userId && m.user.fcmToken
-        )[i];
-        if (member) {
-          await db.user.update({
-            where: { id: member.userId },
-            data:  { fcmToken: null },
-          });
+    const groupMembersWithTokens = routine.group.members.filter(
+      (m) => m.userId !== userId && m.user.fcmToken
+    );
+
+    await Promise.all(
+      result.responses.map(async (resp, i) => {
+        if (
+          !resp.success &&
+          resp.error?.code === "messaging/invalid-registration-token"
+        ) {
+          const member = groupMembersWithTokens[i];
+          if (member) {
+            await db.user.update({
+              where: { id: member.userId },
+              data:  { fcmToken: null },
+            });
+          }
         }
-      }
-    });
+      })
+    );
 
     return { ok: true, sent: result.successCount };
   }, {
-    body: t.Object({ reminderId: t.String() }),
+    body: t.Object({
+      routineId: t.String(),
+      message:   t.Optional(t.String()),
+    }),
     response: {
       200: t.Object({ ok: t.Boolean(), sent: t.Optional(t.Number()) }),
+      400: t.String(),
       401: t.String(),
       404: t.String(),
     },
