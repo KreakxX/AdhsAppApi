@@ -530,6 +530,11 @@ export declare const app: Elysia<"", {
         ":id": {
             patch: {
                 body: {
+                    items?: {
+                        description?: string | null | undefined;
+                        imageUrl?: string | null | undefined;
+                        name: string;
+                    }[] | undefined;
                     name?: string | undefined;
                     radius?: number | undefined;
                     triggerHour?: number | null | undefined;

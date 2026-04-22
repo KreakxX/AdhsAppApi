@@ -142,6 +142,14 @@ export const routineRoutes = new Elysia({ prefix: "/routines" })
         longitude:     body.longitude,
         street:        body.street,
         streetNumber:  body.streetNumber,
+        items: body.items?.length
+          ? {      deleteMany: {}, 
+ create: body.items.map((item, i) => ({
+              name:        item.name,
+              description: item.description,
+              imageUrl:    item.imageUrl,
+            })) }
+          : undefined,
       },
       include: { items: true },
     });
@@ -162,6 +170,11 @@ export const routineRoutes = new Elysia({ prefix: "/routines" })
       longitude:     t.Optional(t.Nullable(t.Number())),
       street:        t.Optional(t.Nullable(t.String())),
       streetNumber:  t.Optional(t.Nullable(t.String())),
+      items: t.Optional(t.Array(t.Object({
+        name:        t.String(),
+        description: t.Optional(t.Nullable(t.String())),
+        imageUrl:    t.Optional(t.Nullable(t.String())),
+      }))),
     }),
     response: {
       200: t.Object({ routine: t.Any() }),
