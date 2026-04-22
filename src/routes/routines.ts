@@ -75,11 +75,11 @@ export const routineRoutes = new Elysia({ prefix: "/routines" })
     const routine = await db.routine.create({
       data: {
         name:          body.name,
-        radius:        body.radius         ?? 50,
-        triggerHour:   body.triggerHour    ?? 0,
-        triggerMinute: body.triggerMinute  ?? 0,
+        radius:        body.radius        ,
+        triggerHour:   body.triggerHour    ,
+        triggerMinute: body.triggerMinute  ,
         triggerOnExit: body.triggerOnExit,
-        freeSpace:     body.freeSpace      ?? 5,
+        freeSpace:     body.freeSpace      ,
         latitude:      body.latitude,
         longitude:     body.longitude,
         street:        body.street,
