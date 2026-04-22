@@ -29,8 +29,10 @@ model user {
   twoFactorExpiresAt DateTime?
   createdAt          DateTime  @default(now())
 
-  routines routine[]
-  groups   groupMember[]
+  routines              routine[]
+  groups                groupMember[]
+  sharedRoutinesCreated sharedRoutine[] @relation("SharedRoutineCreator")
+  sharedRoutinesClaimed sharedRoutine[] @relation("SharedRoutineClaimer")
 }
 
 model routine {
@@ -89,4 +91,43 @@ model groupMember {
   user    user     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([groupId, userId])
+}
+
+model sharedRoutine {
+  id    String @id @default(uuid())
+  token String @unique
+
+  routineId     String
+  routineName   String
+  radius        Int
+  triggerHour   Int?
+  triggerMinute Int?
+  triggerOnExit Boolean @default(false)
+  latitude      Float?
+  longitude     Float?
+  street        String?
+  streetNumber  String?
+  freeSpace     Int?
+
+  createdByUserId String
+  createdBy       user   @relation("SharedRoutineCreator", fields: [createdByUserId], references: [id], onDelete: Cascade)
+
+  claimedAt       DateTime?
+  claimedByUserId String?
+  claimedBy       user?     @relation("SharedRoutineClaimer", fields: [claimedByUserId], references: [id], onDelete: SetNull)
+
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
+
+  items sharedRoutineItem[]
+}
+
+model sharedRoutineItem {
+  id          String  @id @default(uuid())
+  name        String
+  description String?
+  imageUrl    String?
+
+  sharedRoutineId String
+  sharedRoutine   sharedRoutine @relation(fields: [sharedRoutineId], references: [id], onDelete: Cascade)
 }
