@@ -431,3 +431,38 @@ routines: {
   });
   return { ok: true };
 })
+.post("/mute", async ({ userId, body, status }) => {
+  const member = await db.groupMember.findUnique({
+    where: { groupId_userId: { groupId: body.groupId, userId } },
+  });
+
+  if (!member) return status(404, "Not a member of this group");
+
+  await db.groupMember.update({
+    where: { groupId_userId: { groupId: body.groupId, userId } },
+    data: { muted: true },
+  });
+
+  return { ok: true };
+}, {
+  body: t.Object({
+    groupId:  t.String(),
+  }),
+})
+
+.delete("/mute", async ({ userId, body, status }) => {
+  const member = await db.groupMember.findUnique({
+    where: { groupId_userId: { groupId: body.groupId, userId } },
+  });
+
+  if (!member) return status(404, "Not a member of this group");
+
+  await db.groupMember.update({
+    where: { groupId_userId: { groupId: body.groupId, userId } },
+    data: { muted: null },
+  });
+
+  return { ok: true };
+}, {
+  body: t.Object({ groupId: t.String() }),
+})

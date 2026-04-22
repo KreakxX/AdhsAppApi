@@ -782,6 +782,7 @@ export declare const app: Elysia<"", {
                             id: string;
                             userId: string;
                             groupId: string;
+                            muted: boolean | null;
                             user: {
                                 email: string;
                                 id: string;
@@ -853,6 +854,7 @@ export declare const app: Elysia<"", {
                             id: string;
                             userId: string;
                             groupId: string;
+                            muted: boolean | null;
                             user: {
                                 email: string;
                                 id: string;
@@ -1131,6 +1133,64 @@ export declare const app: Elysia<"", {
                                 expected?: string;
                             };
                         };
+                    };
+                };
+            };
+        };
+    };
+} & {
+    groups: {
+        mute: {
+            post: {
+                body: {
+                    groupId: string;
+                };
+                params: {};
+                query: unknown;
+                headers: unknown;
+                response: {
+                    200: {
+                        ok: boolean;
+                    };
+                    404: "Not a member of this group";
+                    401: "Unauthorized" | "Invalid token";
+                    422: {
+                        type: "validation";
+                        on: string;
+                        summary?: string;
+                        message?: string;
+                        found?: unknown;
+                        property?: string;
+                        expected?: string;
+                    };
+                };
+            };
+        };
+    };
+} & {
+    groups: {
+        mute: {
+            delete: {
+                body: {
+                    groupId: string;
+                };
+                params: {};
+                query: unknown;
+                headers: unknown;
+                response: {
+                    200: {
+                        ok: boolean;
+                    };
+                    404: "Not a member of this group";
+                    401: "Unauthorized" | "Invalid token";
+                    422: {
+                        type: "validation";
+                        on: string;
+                        summary?: string;
+                        message?: string;
+                        found?: unknown;
+                        property?: string;
+                        expected?: string;
                     };
                 };
             };

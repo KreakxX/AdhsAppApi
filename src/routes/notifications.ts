@@ -51,9 +51,13 @@ export const notificationRoutes = new Elysia({ prefix: "/notifications" })
     });
 
     const tokens = routine.group.members
-      .filter((m) => m.userId !== userId && m.user.fcmToken)
-      .map((m) => m.user.fcmToken!);
-
+  .filter((m) => {
+    if (m.userId === userId) return false;
+    if (!m.user.fcmToken) return false;
+    if (m.muted) return false;
+    return true;
+  })
+  .map((m) => m.user.fcmToken!);
     if (tokens.length === 0) return { ok: true, sent: 0 };
 
     const notificationBody = body.message

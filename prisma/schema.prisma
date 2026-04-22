@@ -83,10 +83,10 @@ model groupMember {
   id String @id @default(uuid())
 
   groupId String
-  group   group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
-
-  userId String
-  user   user   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group   group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  muted   Boolean?
+  userId  String
+  user    user     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([groupId, userId])
 }
