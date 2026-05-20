@@ -9,6 +9,7 @@ import { authRoutes } from "./routes/auth";
 import { routineRoutes } from "./routes/routines";
 import { groupRoutes } from "./routes/groups";
 import { notificationRoutes } from "./routes/notifications";
+import { sharedRoutineRoutes } from "./routes/sharing";
 
 export const app = new Elysia({ adapter: node() })
   .use(cors())
@@ -23,5 +24,5 @@ export const app = new Elysia({ adapter: node() })
     })
   )
 
- .use(authRoutes).use(routineRoutes).use(notificationRoutes).use(groupRoutes).listen(8060)
+ .use(authRoutes).use(routineRoutes).use(notificationRoutes).use(groupRoutes).use(sharedRoutineRoutes).listen(8060)
 
