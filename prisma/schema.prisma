@@ -72,10 +72,11 @@ model routineItem {
 }
 
 model group {
-  id         String   @id @default(uuid())
-  name       String
-  inviteCode String   @unique @default(cuid())
-  createdAt  DateTime @default(now())
+  id              String   @id @default(uuid())
+  name            String
+  inviteCode      String   @unique @default(cuid())
+  createdAt       DateTime @default(now())
+  createdByUserId String?
 
   members  groupMember[]
   routines routine[]

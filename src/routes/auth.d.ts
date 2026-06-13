@@ -259,13 +259,16 @@ export declare const authRoutes: Elysia<"/auth", {
             status: {
                 put: {
                     body: {
-                        userId: string;
                         onboarded: boolean;
                     };
                     params: {};
                     query: unknown;
                     headers: unknown;
                     response: {
+                        200: {
+                            ok: boolean;
+                        };
+                        401: string;
                         422: {
                             type: "validation";
                             on: string;

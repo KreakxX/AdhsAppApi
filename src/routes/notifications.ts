@@ -50,14 +50,13 @@ export const notificationRoutes = new Elysia({ prefix: "/notifications" })
       where: { id: userId },
     });
 
-    const tokens = routine.group.members
-  .filter((m) => {
-    if (m.userId === userId) return false;
-    if (!m.user.fcmToken) return false;
-    if (m.muted) return false;
-    return true;
-  })
-  .map((m) => m.user.fcmToken!);
+    const eligibleMembers = routine.group.members.filter((m) => {
+      if (m.userId === userId) return false;
+      if (!m.user.fcmToken) return false;
+      if (m.muted) return false;
+      return true;
+    });
+    const tokens = eligibleMembers.map((m) => m.user.fcmToken!);
     if (tokens.length === 0) return { ok: true, sent: 0 };
 
     const notificationBody = body.message
@@ -83,17 +82,13 @@ export const notificationRoutes = new Elysia({ prefix: "/notifications" })
       },
     });
 
-    const groupMembersWithTokens = routine.group.members.filter(
-      (m) => m.userId !== userId && m.user.fcmToken
-    );
-
     await Promise.all(
       result.responses.map(async (resp, i) => {
         if (
           !resp.success &&
           resp.error?.code === "messaging/invalid-registration-token"
         ) {
-          const member = groupMembersWithTokens[i];
+          const member = eligibleMembers[i];
           if (member) {
             await db.user.update({
               where: { id: member.userId },

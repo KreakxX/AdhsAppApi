@@ -279,13 +279,16 @@ export declare const app: Elysia<"", {
             status: {
                 put: {
                     body: {
-                        userId: string;
                         onboarded: boolean;
                     };
                     params: {};
                     query: unknown;
                     headers: unknown;
                     response: {
+                        200: {
+                            ok: boolean;
+                        };
+                        401: string;
                         422: {
                             type: "validation";
                             on: string;
@@ -740,7 +743,6 @@ export declare const app: Elysia<"", {
     groups: {
         post: {
             body: {
-                emoji?: string | undefined;
                 name: string;
             };
             params: {};
@@ -777,6 +779,7 @@ export declare const app: Elysia<"", {
                             userId: string | null;
                             groupId: string | null;
                         }[];
+                        createdByUserId: string | null;
                         inviteCode: string;
                         members: {
                             id: string;
@@ -849,6 +852,7 @@ export declare const app: Elysia<"", {
                             userId: string | null;
                             groupId: string | null;
                         }[];
+                        createdByUserId: string | null;
                         inviteCode: string;
                         members: {
                             id: string;
@@ -1054,6 +1058,7 @@ export declare const app: Elysia<"", {
                     200: {
                         message: string;
                     };
+                    404: string;
                     401: string;
                     403: string;
                     422: {
@@ -1115,14 +1120,16 @@ export declare const app: Elysia<"", {
                         body: unknown;
                         params: {
                             reminderId: string;
-                        } & {};
+                        };
                         query: unknown;
                         headers: unknown;
                         response: {
                             200: {
                                 ok: boolean;
                             };
+                            404: string;
                             401: "Unauthorized" | "Invalid token";
+                            403: string;
                             422: {
                                 type: "validation";
                                 on: string;
@@ -1197,108 +1204,56 @@ export declare const app: Elysia<"", {
         };
     };
 } & {
-    "shared-routines": {};
-} & {
-    "shared-routines": {
-        post: {
-            body: {
-                expiryDays?: number | undefined;
-                routineId: string;
-            };
-            params: {};
-            query: unknown;
-            headers: unknown;
-            response: {
-                200: {
-                    token: string;
-                    expiresAt: string | null;
-                    deepLink: string;
-                };
-                404: string;
-                401: string;
-                403: string;
-                422: {
-                    type: "validation";
-                    on: string;
-                    summary?: string;
-                    message?: string;
-                    found?: unknown;
-                    property?: string;
-                    expected?: string;
-                };
-            };
-        };
-    };
-} & {
-    "shared-routines": {
-        ":token": {
-            get: {
-                body: unknown;
-                params: {
-                    token: string;
-                };
-                query: unknown;
-                headers: unknown;
-                response: {
-                    200: {
-                        items: {
-                            id: string;
-                            name: string;
-                            description: string | null;
-                            imageUrl: string | null;
-                        }[];
-                        radius: number;
-                        triggerHour: number | null;
-                        triggerMinute: number | null;
-                        triggerOnExit: boolean;
-                        latitude: number | null;
-                        longitude: number | null;
-                        street: string | null;
-                        streetNumber: string | null;
-                        freeSpace: number | null;
-                        token: string;
-                        routineName: string;
-                        expiresAt: string | null;
-                        createdBy: {
-                            name: string;
-                        };
-                        alreadyClaimed: boolean;
+    groups: {
+        add: {
+            routine: {
+                put: {
+                    body: {
+                        groupId: string;
+                        routineId: string;
                     };
-                    404: string;
-                    401: "Unauthorized" | "Invalid token";
-                    410: string;
-                    422: {
-                        type: "validation";
-                        on: string;
-                        summary?: string;
-                        message?: string;
-                        found?: unknown;
-                        property?: string;
-                        expected?: string;
-                    };
-                };
-            };
-        };
-    };
-} & {
-    "shared-routines": {
-        ":token": {
-            import: {
-                post: {
-                    body: unknown;
-                    params: {
-                        token: string;
-                    };
+                    params: {};
                     query: unknown;
                     headers: unknown;
                     response: {
                         200: {
-                            routine: any;
+                            success: boolean;
                         };
                         404: string;
-                        400: string;
-                        401: string;
-                        410: string;
+                        401: "Unauthorized" | "Invalid token";
+                        403: string;
+                        422: {
+                            type: "validation";
+                            on: string;
+                            summary?: string;
+                            message?: string;
+                            found?: unknown;
+                            property?: string;
+                            expected?: string;
+                        };
+                    };
+                };
+            };
+        };
+    };
+} & {
+    groups: {
+        remove: {
+            routine: {
+                put: {
+                    body: {
+                        groupId: string;
+                        routineId: string;
+                    };
+                    params: {};
+                    query: unknown;
+                    headers: unknown;
+                    response: {
+                        200: {
+                            success: boolean;
+                        };
+                        401: "Unauthorized" | "Invalid token";
+                        403: string;
                         422: {
                             type: "validation";
                             on: string;

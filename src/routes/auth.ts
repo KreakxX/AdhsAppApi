@@ -129,10 +129,20 @@ export const authRoutes = new Elysia({ prefix: '/auth' }).use(dragonFlyCache).us
     200: t.Object({authenticated:t.Boolean()}),
     404: t.String()
   }
-}).put("/onboarding/status", async({body})=>{
-   await db.user.update({where:{id: body.userId},data: { onboarding: body.onboarded}})
+}).put("/onboarding/status", async({body, jwt, headers, status})=>{
+  const auth = headers.authorization;
+  if (!auth?.startsWith("Bearer ")) return status(401, "Unauthorized");
+  const token = auth.split(" ")[1];
+  const payload = await jwt.verify(token);
+  if (!payload || !payload.userId) return status(401, "Invalid token");
+  await db.user.update({where:{id: payload.userId as string}, data: { onboarding: body.onboarded}})
+  return { ok: true }
 },{
-  body: t.Object({onboarded: t.Boolean(), userId: t.String()})
+  body: t.Object({onboarded: t.Boolean()}),
+  response: {
+    200: t.Object({ ok: t.Boolean() }),
+    401: t.String(),
+  }
 })
 
 .post("/send-code", async ({ body, status }) => {

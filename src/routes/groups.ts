@@ -32,6 +32,7 @@ export const groupRoutes = new Elysia({ prefix: "/groups" })
     const group = await db.group.create({
   data: {
     name: body.name,
+    createdByUserId: userId,
     members: {
       create: { userId },
     },
@@ -65,8 +66,7 @@ routines: {
     return { group };
   }, {
     body: t.Object({
-      name:  t.String(),
-      emoji: t.Optional(t.String()),
+      name: t.String(),
     }),
     response: {
 200: t.Object({
@@ -240,8 +240,8 @@ routines: {
       data: {
         name:         body.name,
         radius:        body.radius        ?? 80,
-        triggerHour:   body.triggerHour   ?? 0,
-        triggerMinute: body.triggerMinute ?? 0,
+        triggerHour:   body.triggerHour   ,
+        triggerMinute: body.triggerMinute ,
         latitude:      body.latitude,
         longitude:     body.longitude,
         freeSpace:     body.freeSpace,
@@ -353,11 +353,19 @@ routines: {
   })
 
   .delete("/:id", async ({ userId, params, status, store }) => {
-    const membership = await db.groupMember.findUnique({
-      where: { groupId_userId: { groupId: params.id, userId } },
+    const group = await db.group.findUnique({
+      where: { id: params.id },
+      include: { members: true },
     });
 
-    if (!membership) return status(403, "Nicht Mitglied dieser Gruppe");
+    if (!group) return status(404, "Gruppe nicht gefunden");
+
+    const isMember = group.members.some((m) => m.userId === userId);
+    if (!isMember) return status(403, "Nicht Mitglied dieser Gruppe");
+
+    if (group.createdByUserId && group.createdByUserId !== userId) {
+      return status(403, "Nur der Ersteller kann diese Gruppe löschen");
+    }
 
     await db.group.delete({ where: { id: params.id } });
      const groups = await db.group.findMany({
@@ -379,6 +387,7 @@ routines: {
       200: t.Object({ message: t.String() }),
       401: t.String(),
       403: t.String(),
+      404: t.String(),
     },
   })
 .patch("/reminders/:reminderId/items/:itemId", async ({ userId, params, status,store }) => {
@@ -424,12 +433,31 @@ routines: {
     404: t.String(),
   },
 })
-.delete("/reminders/:reminderId/reset", async ({ params }) => {
+.delete("/reminders/:reminderId/reset", async ({ userId, params, status }) => {
+  const reminder = await db.routine.findUnique({
+    where: { id: params.reminderId },
+  });
+
+  if (!reminder?.groupId) return status(404, "Erinnerung nicht gefunden");
+
+  const membership = await db.groupMember.findUnique({
+    where: { groupId_userId: { groupId: reminder.groupId, userId } },
+  });
+
+  if (!membership) return status(403, "Nicht Mitglied dieser Gruppe");
+
   await db.routineItem.updateMany({
     where: { routineId: params.reminderId },
     data: { checkedBy: null, checkedAt: null },
   });
   return { ok: true };
+}, {
+  params: t.Object({ reminderId: t.String() }),
+  response: {
+    200: t.Object({ ok: t.Boolean() }),
+    403: t.String(),
+    404: t.String(),
+  },
 })
 .post("/mute", async ({ userId, body, status }) => {
   const member = await db.groupMember.findUnique({
@@ -465,4 +493,87 @@ routines: {
   return { ok: true };
 }, {
   body: t.Object({ groupId: t.String() }),
+})
+.put("/add/routine", async({userId, body, status}) =>{
+  const {groupId, routineId} = body;
+
+  const membership = await db.groupMember.findUnique({
+    where: { groupId_userId: { groupId, userId } },
+  });
+  if (!membership) return status(403, "Nicht Mitglied dieser Gruppe");
+
+  const routine = await db.routine.findUnique({ where: { id: routineId } });
+  if (!routine) return status(404, "Routine nicht gefunden");
+  if (routine.userId !== userId) return status(403, "Keine Berechtigung für diese Routine");
+
+  await db.group.update({
+    where: { id: groupId },
+    data: {
+      routines: {
+        connect: { id: routineId },
+      },
+    },
+  });
+
+  await db.routine.update({where: {id: routineId}, data:{groupId: groupId}})
+
+  return { success: true };
+
+},{
+  body: t.Object({
+    groupId: t.String(),
+    routineId: t.String()
+  }),
+  response: {
+    200: t.Object({ success: t.Boolean() }),
+    403: t.String(),
+    404: t.String(),
+  }
+})
+
+.put("/remove/routine", async ({ userId, body, status, store }) => {
+  const { groupId, routineId } = body;
+
+  const membership = await db.groupMember.findUnique({
+    where: { groupId_userId: { groupId, userId } },
+  });
+  if (!membership) return status(403, "Nicht Mitglied dieser Gruppe");
+
+  await db.group.update({
+    where: { id: groupId },
+    data: {
+      routines: {
+        disconnect: { id: routineId },
+      },
+    },
+  });
+
+  await db.routine.update({
+    where: { id: routineId },
+    data: { groupId: null },
+  });
+
+  const groups = await db.group.findMany({
+    where: {
+      members: { some: { userId } },
+    },
+    include: {
+      members: { include: { user: true } },
+      routines: { include: { items: true } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  await store.cache.set(groupsKey(userId), superjson.stringify({ groups }));
+
+  return { success: true };
+}, {
+  body: t.Object({
+    groupId: t.String(),
+    routineId: t.String(),
+  }),
+  response: {
+    200: t.Object({ success: t.Boolean() }),
+    403: t.String(),
+  },
 })
