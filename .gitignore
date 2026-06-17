@@ -40,7 +40,7 @@ google-services.json
 /prisma/generated/prisma/
 
 adhs-app-api.tar
-
+*.tar
 Dockerfile
 
 generated/
