@@ -30,7 +30,11 @@ export const authRoutes = new Elysia({ prefix: '/auth' }).use(dragonFlyCache).us
     200:t.Object({message: t.String(), jwt: t.String(), status: t.Boolean()}), 404: t.String()
   }
 })
-.post("register-code", async({body, store}) =>{
+.post("register-code", async({body, store, status}) =>{
+
+   const userExist = await db.user.findUnique({where: {email: body.email}})
+  if(userExist) return status(404, { message: "User already exists", status: false })
+
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     await store.cache.set(`email_verification:${body.email}`, code, 300)
 
@@ -63,7 +67,8 @@ export const authRoutes = new Elysia({ prefix: '/auth' }).use(dragonFlyCache).us
   body: t.Object({
     email: t.String()
   }),response: {
-    200: t.Object({status: t.Boolean()})
+    200: t.Object({status: t.Boolean()}),
+    404: t.Object({message: t.String(), status: t.Boolean()})
   }
 })
 

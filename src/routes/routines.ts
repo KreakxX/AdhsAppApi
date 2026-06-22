@@ -1,11 +1,29 @@
 import jwt from "@elysiajs/jwt";
 import Elysia, { t } from "elysia";
 import { db } from "../../db.ts";
+import { Prisma } from "../../prisma/generated/prisma/client";
 import { routinePlain } from "@/generated/prismabox/routine.ts";
 import { routineItem, routineItemPlain } from "@/generated/prismabox/routineItem.ts";
 import { dragonFlyCache } from "../cache.ts";
 import { getCachedOrFetch } from "../types.ts";
 import superjson from 'superjson';
+
+// Per-day schedule ("normal times per day"). Mirrors the WeeklyPlan shape on the client.
+const weeklyPlanSchema = t.Object({
+  enabled:   t.Boolean(),
+  freeSpace: t.Number(),
+  days: t.Array(t.Object({
+    active: t.Boolean(),
+    times:  t.Array(t.Object({ hour: t.Number(), minute: t.Number() })),
+  })),
+});
+
+// Prisma needs Prisma.DbNull (not literal null) to clear a nullable Json column;
+// `undefined` leaves the column untouched on update.
+const toJson = (v: unknown) =>
+  v === undefined ? undefined
+  : v === null    ? Prisma.DbNull
+  : (v as Prisma.InputJsonValue);
 const jwtGuard = new Elysia({ name: "jwtGuard" }).use(dragonFlyCache).use(
   jwt({ name: "jwt", secret: process.env.JWT_SECRET! })
 ).derive({ as: "scoped" }, async ({ jwt, headers, status }) => {
@@ -84,6 +102,10 @@ export const routineRoutes = new Elysia({ prefix: "/routines" })
         longitude:     body.longitude,
         street:        body.street,
         streetNumber:  body.streetNumber,
+        activeDays:     toJson(body.activeDays),
+        timeframeStart: body.timeframeStart,
+        timeframeEnd:   body.timeframeEnd,
+        weeklyPlan:     toJson(body.weeklyPlan),
         userId,
         items: body.items?.length
           ? { create: body.items.map((item, i) => ({
@@ -112,6 +134,10 @@ export const routineRoutes = new Elysia({ prefix: "/routines" })
       longitude:     t.Optional(t.Nullable(t.Number())),
       street:        t.Optional(t.Nullable(t.String())),
       streetNumber:  t.Optional(t.Nullable(t.String())),
+      activeDays:     t.Optional(t.Nullable(t.Array(t.Number()))),
+      timeframeStart: t.Optional(t.Nullable(t.String())),
+      timeframeEnd:   t.Optional(t.Nullable(t.String())),
+      weeklyPlan:     t.Optional(t.Nullable(weeklyPlanSchema)),
       items: t.Optional(t.Array(t.Object({
         name:        t.String(),
         description: t.Optional(t.Nullable(t.String())),
@@ -142,6 +168,11 @@ export const routineRoutes = new Elysia({ prefix: "/routines" })
         longitude:     body.longitude,
         street:        body.street,
         streetNumber:  body.streetNumber,
+        triggerOnExit: body.triggerOnExit,
+        activeDays:     toJson(body.activeDays),
+        timeframeStart: body.timeframeStart,
+        timeframeEnd:   body.timeframeEnd,
+        weeklyPlan:     toJson(body.weeklyPlan),
         items: body.items?.length
           ? {      deleteMany: {}, 
  create: body.items.map((item, i) => ({
@@ -170,6 +201,11 @@ export const routineRoutes = new Elysia({ prefix: "/routines" })
       longitude:     t.Optional(t.Nullable(t.Number())),
       street:        t.Optional(t.Nullable(t.String())),
       streetNumber:  t.Optional(t.Nullable(t.String())),
+      triggerOnExit: t.Optional(t.Boolean()),
+      activeDays:     t.Optional(t.Nullable(t.Array(t.Number()))),
+      timeframeStart: t.Optional(t.Nullable(t.String())),
+      timeframeEnd:   t.Optional(t.Nullable(t.String())),
+      weeklyPlan:     t.Optional(t.Nullable(weeklyPlanSchema)),
       items: t.Optional(t.Array(t.Object({
         name:        t.String(),
         description: t.Optional(t.Nullable(t.String())),

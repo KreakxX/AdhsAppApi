@@ -134,6 +134,10 @@ export declare const authRoutes: Elysia<"/auth", {
                     200: {
                         status: boolean;
                     };
+                    404: {
+                        message: string;
+                        status: boolean;
+                    };
                     422: {
                         type: "validation";
                         on: string;
@@ -167,12 +171,12 @@ export declare const authRoutes: Elysia<"/auth", {
                             id: string;
                             password: string | null;
                             googleID: string | null;
-                            name: string;
                             onboarding: boolean;
+                            name: string;
+                            createdAt: Date;
                             fcmToken: string | null;
                             twoFactorCode: string | null;
                             twoFactorExpiresAt: Date | null;
-                            createdAt: Date;
                         };
                     };
                     404: {
