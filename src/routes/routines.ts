@@ -7,6 +7,7 @@ import { routineItem, routineItemPlain } from "@/generated/prismabox/routineItem
 import { dragonFlyCache } from "../cache.ts";
 import { getCachedOrFetch } from "../types.ts";
 import superjson from 'superjson';
+import { locationPlain } from "@/generated/prismabox/location.ts";
 
 // Per-day schedule ("normal times per day"). Mirrors the WeeklyPlan shape on the client.
 const weeklyPlanSchema = t.Object({
@@ -46,7 +47,7 @@ export const routineRoutes = new Elysia({ prefix: "/routines" })
     async () => {
       const routines = await db.routine.findMany({
         where: { userId },
-        include: { items: true },
+        include: { items: true, locations: true },
         orderBy: { createdAt: "desc" },
       });
       return { routines };
@@ -61,6 +62,7 @@ export const routineRoutes = new Elysia({ prefix: "/routines" })
         t.Composite([
           routinePlain,
           t.Object({ items: t.Array(routineItemPlain) }),
+          t.Object({locations: t.Array(locationPlain)})
         ])
       ),
     }),
@@ -73,7 +75,7 @@ export const routineRoutes = new Elysia({ prefix: "/routines" })
     async () => {
       const routine = await db.routine.findUnique({
         where: { id: params.id },
-        include: { items: true },
+        include: { items: true, locations:true },
       });
 
       if (!routine) throw status(404, "Routine not found");
@@ -97,8 +99,10 @@ export const routineRoutes = new Elysia({ prefix: "/routines" })
         triggerMinute: body.triggerMinute  ,
         triggerOnExit: body.triggerOnExit,
         freeSpace:     body.freeSpace      ,
-        latitude:      body.latitude,
-        longitude:     body.longitude,
+        locations:      body.locations.length ? {create: body.locations.map((location,i) =>({
+          latitude: location.latitude,
+          longitude: location.longitude
+        }))}: undefined,
         street:        body.street,
         streetNumber:  body.streetNumber,
         activeDays:     toJson(body.activeDays),
@@ -114,10 +118,10 @@ export const routineRoutes = new Elysia({ prefix: "/routines" })
             })) }
           : undefined,
       },
-      include: { items: true },
+      include: { items: true, locations: true },
     });
 
-    const newRoutines = await db.routine.findMany({where: {userId: userId}, include: {items: true}})
+    const newRoutines = await db.routine.findMany({where: {userId: userId}, include: {items: true, locations: true}})
     await store.cache.set(`routines:${userId}`, superjson.stringify({routines: newRoutines}))
 
     return { routine };
@@ -129,8 +133,7 @@ export const routineRoutes = new Elysia({ prefix: "/routines" })
       triggerMinute: t.Optional(t.Nullable(t.Number())),
       triggerOnExit: t.Optional(t.Boolean()), 
       freeSpace:     t.Optional(t.Number()),
-      latitude:      t.Optional(t.Nullable(t.Number())),
-      longitude:     t.Optional(t.Nullable(t.Number())),
+      locations:    t.Array( t.Object({latitude: t.Number(), longitude: t.Number()})),
       street:        t.Optional(t.Nullable(t.String())),
       streetNumber:  t.Optional(t.Nullable(t.String())),
       activeDays:     t.Optional(t.Nullable(t.Array(t.Number()))),
@@ -144,7 +147,7 @@ export const routineRoutes = new Elysia({ prefix: "/routines" })
       }))),
     }),
     response: {
-      200: t.Object({routine: t.Composite([routinePlain, t.Object({items: t.Array(routineItemPlain)})])}),
+      200: t.Object({routine: t.Composite([routinePlain, t.Object({locations: t.Array(locationPlain)}), t.Object({items: t.Array(routineItemPlain)})])}),
       401: t.String(),
     },
   })
@@ -163,9 +166,14 @@ export const routineRoutes = new Elysia({ prefix: "/routines" })
         triggerHour:   body.triggerHour,
         triggerMinute: body.triggerMinute,
         freeSpace:     body.freeSpace,
-        latitude:      body.latitude,
-        longitude:     body.longitude,
         street:        body.street,
+        locations:     body.locations?.length
+          ? {      deleteMany: {}, 
+ create: body.locations.map((location, i) => ({
+              latitude: location.latitude,
+          longitude: location.longitude
+            })) }
+          : undefined,
         streetNumber:  body.streetNumber,
         triggerOnExit: body.triggerOnExit,
         activeDays:     toJson(body.activeDays),
@@ -181,10 +189,10 @@ export const routineRoutes = new Elysia({ prefix: "/routines" })
             })) }
           : undefined,
       },
-      include: { items: true },
+      include: { items: true, locations: true },
     });
 
-    const newRoutines = await db.routine.findMany({where: {userId: userId}, include: {items: true}})
+    const newRoutines = await db.routine.findMany({where: {userId: userId}, include: {items: true, locations: true}})
     await store.cache.set(`routines:${userId}`, superjson.stringify({routines: newRoutines}))
 
     return { routine };
@@ -196,8 +204,7 @@ export const routineRoutes = new Elysia({ prefix: "/routines" })
       triggerHour:   t.Optional(t.Nullable(t.Number())),
       triggerMinute: t.Optional(t.Nullable(t.Number())),
       freeSpace:      t.Optional(t.Nullable(t.Number())),
-      latitude:      t.Optional(t.Nullable(t.Number())),
-      longitude:     t.Optional(t.Nullable(t.Number())),
+      locations:    t.Array( t.Object({latitude: t.Number(), longitude: t.Number()})),
       street:        t.Optional(t.Nullable(t.String())),
       streetNumber:  t.Optional(t.Nullable(t.String())),
       triggerOnExit: t.Optional(t.Boolean()),
@@ -226,7 +233,7 @@ export const routineRoutes = new Elysia({ prefix: "/routines" })
     if (existing.userId !== userId) return status(403, "Forbidden");
 
     await db.routine.delete({ where: { id: params.id } });
-    const newRoutines = await db.routine.findMany({where: {userId: userId}, include: {items: true}})
+    const newRoutines = await db.routine.findMany({where: {userId: userId}, include: {items: true, locations: true}})
     await store.cache.set(`routines:${userId}`, superjson.stringify({routines: newRoutines}))
     return { message: "Routine deleted" };
   }, {
@@ -250,7 +257,7 @@ export const routineRoutes = new Elysia({ prefix: "/routines" })
       data:  { checkedAt: new Date, checkedBy: body.checkedBy },
     });
 
-    const newRoutines = await db.routine.findMany({where: {userId: userId}, include: {items: true}})
+    const newRoutines = await db.routine.findMany({where: {userId: userId}, include: {items: true, locations: true}})
     await store.cache.set(`routines:${userId}`, superjson.stringify({routines: newRoutines}))
     return { item };
   }, {
@@ -271,7 +278,7 @@ export const routineRoutes = new Elysia({ prefix: "/routines" })
     if (routine.userId !== userId) return status(403, "Forbidden");
 
     await db.routineItem.delete({ where: { id: params.itemId } });
-     const newRoutines = await db.routine.findMany({where: {userId: userId}, include: {items: true}})
+     const newRoutines = await db.routine.findMany({where: {userId: userId}, include: {items: true, locations: true}})
     await store.cache.set(`routines:${userId}`, superjson.stringify({routines: newRoutines}))
     return { message: "Item deleted" };
   }, {

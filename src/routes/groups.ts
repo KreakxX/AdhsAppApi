@@ -9,6 +9,7 @@ import { routineItem, routineItemPlain } from "@/generated/prismabox/routineItem
 import { getCachedOrFetch } from "../types.ts";
 import { dragonFlyCache } from "../cache.ts";
 import superjson from 'superjson';
+import { locationPlain } from "@/generated/prismabox/location.ts";
 
 const groupsKey = (userId: string) => `groups:${userId}`;
 
@@ -45,7 +46,8 @@ export const groupRoutes = new Elysia({ prefix: "/groups" })
     },
 routines: {
       include:{
-       items: true
+       items: true,
+       locations: true
       }
     },  },
 }); 
@@ -56,7 +58,7 @@ routines: {
     },
     include: {
       members: { include: { user: true } },
-      routines: { include: { items: true } },
+      routines: { include: { items: true, locations: true } },
     },
     orderBy: { createdAt: "desc" },
   });
@@ -107,7 +109,7 @@ routines: {
             include: { user: true },
           },
           routines: {
-            include: { items: true },
+            include: { items: true, locations:true},
           },
         },
         orderBy: { createdAt: "desc" },
@@ -128,7 +130,8 @@ routines: {
           routines: t.Array(
             t.Composite([
               routinePlain,
-              t.Object({ items: t.Array(routineItemPlain) }), 
+               t.Object({locations: t.Array(locationPlain)}), 
+               t.Object({items: t.Array(routineItemPlain)})
             ])
           ),
         }),
@@ -173,7 +176,7 @@ routines: {
     },
     include: {
       members: { include: { user: true } },
-      routines: { include: { items: true } },
+      routines: { include: { items: true, locations: true } },
     },
     orderBy: { createdAt: "desc" },
   });
@@ -210,7 +213,7 @@ routines: {
     },
     include: {
       members: { include: { user: true } },
-      routines: { include: { items: true } },
+      routines: { include: { items: true, locations: true } },
     },
     orderBy: { createdAt: "desc" },
   });
@@ -242,9 +245,10 @@ routines: {
         radius:        body.radius        ?? 80,
         triggerHour:   body.triggerHour   ,
         triggerMinute: body.triggerMinute ,
-        latitude:      body.latitude,
-        longitude:     body.longitude,
-        freeSpace:     body.freeSpace,
+  locations:      body.locations.length ? {create: body.locations.map((location,i) =>({
+          latitude: location.latitude,
+          longitude: location.longitude
+        }))}: undefined,        freeSpace:     body.freeSpace,
         street:        body.street,
         streetNumber:  body.streetNumber,
         triggerOnExit: body.triggerOnExit,
@@ -258,7 +262,7 @@ routines: {
         })),
       } : undefined,
     },
-    include: { items: true },
+    include: { items: true, locations: true },
     
     });
 
@@ -268,7 +272,7 @@ routines: {
     },
     include: {
       members: { include: { user: true } },
-      routines: { include: { items: true } },
+      routines: { include: { items: true,locations: true } },
     },
     orderBy: { createdAt: "desc" },
   });
@@ -284,8 +288,7 @@ routines: {
       triggerHour:   t.Optional(t.Nullable(t.Number())),
       triggerMinute: t.Optional(t.Nullable(t.Number())),
       triggerOnExit: t.Optional(t.Boolean()), 
-      latitude:      t.Optional(t.Nullable(t.Number())),
-      longitude:     t.Optional(t.Nullable(t.Number())),
+      locations:    t.Array( t.Object({latitude: t.Number(), longitude: t.Number()})),
       street:        t.Optional(t.Nullable(t.String())),
       freeSpace:      t.Optional(t.Nullable(t.Number())),
       streetNumber:  t.Optional(t.Nullable(t.String())),
@@ -300,7 +303,8 @@ routines: {
  200: t.Object({
       reminder: t.Composite([
         routinePlain,
-        t.Object({ items: t.Array(routineItemPlain) }), 
+        t.Object({ items: t.Array(routineItemPlain) }),
+        t.Object({locations: t.Array(locationPlain)}) 
       ]),
     }),      401: t.String(),
       403: t.String(),
@@ -332,7 +336,7 @@ routines: {
     },
     include: {
       members: { include: { user: true } },
-      routines: { include: { items: true } },
+      routines: { include: { items: true, locations: true } },
     },
     orderBy: { createdAt: "desc" },
   });
@@ -374,7 +378,7 @@ routines: {
     },
     include: {
       members: { include: { user: true } },
-      routines: { include: { items: true } },
+      routines: { include: { items: true, locations: true }},
     },
     orderBy: { createdAt: "desc" },
   });
@@ -417,7 +421,7 @@ routines: {
     },
     include: {
       members: { include: { user: true } },
-      routines: { include: { items: true } },
+      routines: { include: { items: true, locations: true } },
     },
     orderBy: { createdAt: "desc" },
   });
@@ -559,7 +563,7 @@ routines: {
     },
     include: {
       members: { include: { user: true } },
-      routines: { include: { items: true } },
+      routines: { include: { items: true, locations: true } },
     },
     orderBy: { createdAt: "desc" },
   });

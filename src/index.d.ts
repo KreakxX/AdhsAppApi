@@ -297,6 +297,35 @@ export declare const app: Elysia<"", {
         };
     };
 } & {
+    auth: {
+        account: {
+            delete: {
+                body: {
+                    password: string;
+                };
+                params: {};
+                query: unknown;
+                headers: unknown;
+                response: {
+                    200: {
+                        deleted: boolean;
+                    };
+                    404: string;
+                    401: string;
+                    422: {
+                        type: "validation";
+                        on: string;
+                        summary?: string;
+                        message?: string;
+                        found?: unknown;
+                        property?: string;
+                        expected?: string;
+                    };
+                };
+            };
+        };
+    };
+} & {
     routines: {};
 } & {
     routines: {
@@ -326,8 +355,6 @@ export declare const app: Elysia<"", {
                         triggerHour: number | null;
                         triggerMinute: number | null;
                         freeSpace: number | null;
-                        latitude: number | null;
-                        longitude: number | null;
                         street: string | null;
                         streetNumber: string | null;
                         triggerOnExit: boolean;
@@ -335,6 +362,12 @@ export declare const app: Elysia<"", {
                         timeframeEnd: string | null;
                         timeframeStart: string | null;
                         weeklyPlan: any;
+                        locations: {
+                            routineId: string;
+                            latitude: number;
+                            longitude: number;
+                            locationId: string;
+                        }[];
                     }[];
                 };
                 401: "No Authorization Header found" | "Invalid or expired token";
@@ -372,6 +405,12 @@ export declare const app: Elysia<"", {
                                 checkedAt: Date | null;
                                 checkedBy: string | null;
                             }[];
+                            locations: {
+                                routineId: string;
+                                latitude: number;
+                                longitude: number;
+                                locationId: string;
+                            }[];
                         } & {
                             id: string;
                             name: string;
@@ -382,8 +421,6 @@ export declare const app: Elysia<"", {
                             triggerHour: number | null;
                             triggerMinute: number | null;
                             freeSpace: number | null;
-                            latitude: number | null;
-                            longitude: number | null;
                             street: string | null;
                             streetNumber: string | null;
                             triggerOnExit: boolean;
@@ -420,8 +457,6 @@ export declare const app: Elysia<"", {
                 triggerHour?: number | null | undefined;
                 triggerMinute?: number | null | undefined;
                 freeSpace?: number | undefined;
-                latitude?: number | null | undefined;
-                longitude?: number | null | undefined;
                 street?: string | null | undefined;
                 streetNumber?: string | null | undefined;
                 triggerOnExit?: boolean | undefined;
@@ -440,6 +475,10 @@ export declare const app: Elysia<"", {
                     }[];
                 } | null | undefined;
                 name: string;
+                locations: {
+                    latitude: number;
+                    longitude: number;
+                }[];
             };
             params: {};
             query: unknown;
@@ -465,8 +504,6 @@ export declare const app: Elysia<"", {
                         triggerHour: number | null;
                         triggerMinute: number | null;
                         freeSpace: number | null;
-                        latitude: number | null;
-                        longitude: number | null;
                         street: string | null;
                         streetNumber: string | null;
                         triggerOnExit: boolean;
@@ -474,6 +511,12 @@ export declare const app: Elysia<"", {
                         timeframeEnd: string | null;
                         timeframeStart: string | null;
                         weeklyPlan: any;
+                        locations: {
+                            routineId: string;
+                            latitude: number;
+                            longitude: number;
+                            locationId: string;
+                        }[];
                     };
                 };
                 401: string;
@@ -504,8 +547,6 @@ export declare const app: Elysia<"", {
                     triggerHour?: number | null | undefined;
                     triggerMinute?: number | null | undefined;
                     freeSpace?: number | null | undefined;
-                    latitude?: number | null | undefined;
-                    longitude?: number | null | undefined;
                     street?: string | null | undefined;
                     streetNumber?: string | null | undefined;
                     triggerOnExit?: boolean | undefined;
@@ -523,6 +564,10 @@ export declare const app: Elysia<"", {
                             }[];
                         }[];
                     } | null | undefined;
+                    locations: {
+                        latitude: number;
+                        longitude: number;
+                    }[];
                 };
                 params: {
                     id: string;
@@ -749,8 +794,6 @@ export declare const app: Elysia<"", {
                             triggerHour: number | null;
                             triggerMinute: number | null;
                             freeSpace: number | null;
-                            latitude: number | null;
-                            longitude: number | null;
                             street: string | null;
                             streetNumber: string | null;
                             triggerOnExit: boolean;
@@ -826,8 +869,6 @@ export declare const app: Elysia<"", {
                             triggerHour: number | null;
                             triggerMinute: number | null;
                             freeSpace: number | null;
-                            latitude: number | null;
-                            longitude: number | null;
                             street: string | null;
                             streetNumber: string | null;
                             triggerOnExit: boolean;
@@ -835,6 +876,12 @@ export declare const app: Elysia<"", {
                             timeframeEnd: string | null;
                             timeframeStart: string | null;
                             weeklyPlan: any;
+                            locations: {
+                                routineId: string;
+                                latitude: number;
+                                longitude: number;
+                                locationId: string;
+                            }[];
                         }[];
                         createdByUserId: string | null;
                         inviteCode: string;
@@ -944,13 +991,15 @@ export declare const app: Elysia<"", {
                     triggerHour?: number | null | undefined;
                     triggerMinute?: number | null | undefined;
                     freeSpace?: number | null | undefined;
-                    latitude?: number | null | undefined;
-                    longitude?: number | null | undefined;
                     street?: string | null | undefined;
                     streetNumber?: string | null | undefined;
                     triggerOnExit?: boolean | undefined;
                     name: string;
                     groupId: string;
+                    locations: {
+                        latitude: number;
+                        longitude: number;
+                    }[];
                 };
                 params: {};
                 query: unknown;
@@ -976,8 +1025,6 @@ export declare const app: Elysia<"", {
                             triggerHour: number | null;
                             triggerMinute: number | null;
                             freeSpace: number | null;
-                            latitude: number | null;
-                            longitude: number | null;
                             street: string | null;
                             streetNumber: string | null;
                             triggerOnExit: boolean;
@@ -985,6 +1032,12 @@ export declare const app: Elysia<"", {
                             timeframeEnd: string | null;
                             timeframeStart: string | null;
                             weeklyPlan: any;
+                            locations: {
+                                routineId: string;
+                                latitude: number;
+                                longitude: number;
+                                locationId: string;
+                            }[];
                         };
                     };
                     401: string;

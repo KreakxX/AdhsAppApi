@@ -41,8 +41,7 @@ model routine {
   triggerHour    Int?
   triggerMinute  Int?
   freeSpace      Int?
-  latitude       Float?
-  longitude      Float?
+  locations      location[]
   street         String?
   streetNumber   String?
   createdAt      DateTime      @default(now())
@@ -59,6 +58,16 @@ model routine {
 
   @@index([groupId], map: "routine_groupId_fkey")
   @@index([userId], map: "routine_userId_fkey")
+}
+
+model location {
+  locationId String  @id @default(uuid())
+  longitude  Float
+  latitude   Float
+  routineId  String
+  routine    routine @relation(fields: [routineId], references: [id], onDelete: Cascade)
+
+  @@index([routineId], map: "routineLocation_routineId_fkey")
 }
 
 model routineItem {
