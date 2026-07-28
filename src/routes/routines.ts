@@ -49,7 +49,6 @@ export const routineRoutes = new Elysia({ prefix: "/routines" })
         include: { items: true },
         orderBy: { createdAt: "desc" },
       });
-
       return { routines };
     },
     store.cache,

@@ -72,7 +72,7 @@ export const authRoutes = new Elysia({ prefix: '/auth' }).use(dragonFlyCache).us
   }
 })
 
-.post("register", async({body,status,store})=>{
+.post("register", async({body,status,store,jwt})=>{
 
   const code = await store.cache.get(`email_verification:${body.email}`)
 
@@ -92,7 +92,8 @@ export const authRoutes = new Elysia({ prefix: '/auth' }).use(dragonFlyCache).us
   })
   await store.cache.del(`email_verification:${body.email}`)
 
-  return {user}
+  return {jwt: await jwt.sign({ userId: user.id, email: user.email})}
+
 },{
    body: t.Object({
     email: t.String(),
@@ -100,7 +101,7 @@ export const authRoutes = new Elysia({ prefix: '/auth' }).use(dragonFlyCache).us
     name: t.String(),
     code: t.String()
   }),response: {
-  200: t.Object({ user: userPlain }),
+  200: t.Object({ jwt: t.String() }),
   404: t.Object({ message: t.String(), status: t.Boolean() }),
 }
 }).get("/is/user/onboarded", async({query})=>{
@@ -149,74 +150,56 @@ export const authRoutes = new Elysia({ prefix: '/auth' }).use(dragonFlyCache).us
     401: t.String(),
   }
 })
+.delete("/account", async({body, jwt, headers, status, store})=>{
+  const auth = headers.authorization;
+  if (!auth?.startsWith("Bearer ")) return status(401, "Unauthorized");
+  const token = auth.split(" ")[1];
+  const payload = await jwt.verify(token);
+  if (!payload || !payload.userId) return status(401, "Invalid token");
 
-.post("/send-code", async ({ body, status }) => {
-  const user = await db.user.findUnique({ where: { email: body.email } });
+  const userId = payload.userId as string;
+  const user = await db.user.findUnique({where: {id: userId}})
   if (!user) return status(404, "User not found");
+  if (!user.password) return status(401, "Password not valid");
 
-  const code = Math.floor(100000 + Math.random() * 900000).toString();
-  const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+  const isValid = await Bun.password.verify(body.password, user.password)
+  if (!isValid) return status(401, "Password not valid");
 
-  await db.user.update({
-    where: { email: body.email },
-    data: { twoFactorCode: code, twoFactorExpiresAt: expiresAt },
-  });
- 
-  
-  await mailer.sendMail({
-    from: '"GeoAlert" <support@medapp.de>',
-    to: body.email,
-    subject: "Dein GeoAlert Bestätigungscode",
-    html: `
-      <div style="font-family: system-ui, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px;">
-        <h2 style="color: #1A1917; font-size: 22px; margin-bottom: 8px;">Dein Code</h2>
-        <p style="color: #6B6860; font-size: 15px; margin-bottom: 28px;">
-          Gib diesen Code in der App ein. Er ist 10 Minuten gültig.
-        </p>
-        <div style="background: #EFF6FF; border: 1px solid #DBEAFE; border-radius: 16px;
-          padding: 28px; text-align: center; margin-bottom: 24px;">
-          <span style="font-size: 42px; font-weight: 700; letter-spacing: 12px; color: #2563EB;">
-            ${code}
-          </span>
-        </div>
-        <p style="color: #A09D97; font-size: 13px;">
-          Falls du das nicht angefordert hast, ignoriere diese E-Mail.
-        </p>
-      </div>
-    `,
-  });
- 
+  const groupIds = (await db.groupMember.findMany({
+    where: { userId },
+    select: { groupId: true }
+  })).map((member) => member.groupId)
 
-  return { sent: true };
-}, {
-  body: t.Object({ email: t.String() }),
-  response: {
-    200: t.Object({ sent: t.Boolean() }),
-    404: t.String(),
-  },
-})
-.post("/verify-code", async ({ body, jwt, status }) => {
-  const user = await db.user.findUnique({ where: { email: body.email } });
+  // co-members see the leaving user in their cached group lists
+  const coMemberIds = (await db.groupMember.findMany({
+    where: { groupId: { in: groupIds }, userId: { not: userId } },
+    select: { userId: true }
+  })).map((member) => member.userId)
 
-  if (!user)                            return status(404, "User not found");
-  if (!user.twoFactorCode)              return status(400, "Kein Code angefordert");
-  if (user.twoFactorCode !== body.code) return status(400, "Ungültiger Code");
-  if (!user.twoFactorExpiresAt || user.twoFactorExpiresAt < new Date()) {
-    return status(400, "Code abgelaufen");
+  // routines, groupMemberships and created sharedRoutines cascade with the user,
+  // claimed sharedRoutines keep existing with claimedByUserId set to null
+  await db.user.delete({where: {id: userId}})
+
+  // groups the user was the last member of would stay behind as orphans
+  if (groupIds.length > 0) {
+    await db.group.deleteMany({
+      where: { id: { in: groupIds }, members: { none: {} } }
+    })
   }
 
-  await db.user.update({
-    where: { email: body.email },
-    data: { twoFactorCode: null, twoFactorExpiresAt: null },
-  });
+  await store.cache.del(`routines:${userId}`)
+  await store.cache.del(`groups:${userId}`)
+  for (const coMemberId of new Set(coMemberIds)) {
+    await store.cache.del(`groups:${coMemberId}`)
+  }
 
-  const token = await jwt.sign({ userId: user.id, email: user.email });
-  return { jwt: token };
-}, {
-  body: t.Object({ email: t.String(), code: t.String() }),
+  return { deleted: true }
+},{
+  body: t.Object({password: t.String()}),
   response: {
-    200: t.Object({ jwt: t.String() }),
-    400: t.String(),
+    200: t.Object({ deleted: t.Boolean() }),
+    401: t.String(),
     404: t.String(),
-  },
+  }
 })
+
