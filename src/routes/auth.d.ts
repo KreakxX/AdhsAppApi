@@ -91,95 +91,31 @@ export declare const authRoutes: Elysia<"/auth", {
     auth: {};
 } & {
     auth: {
-        login: {
-            post: {
-                body: {
-                    email: string;
-                    password: string;
-                };
-                params: {};
-                query: unknown;
-                headers: unknown;
-                response: {
-                    200: {
-                        jwt: string;
-                        message: string;
-                        status: boolean;
+        auth: {
+            google: {
+                post: {
+                    body: {
+                        idToken: string;
                     };
-                    404: string;
-                    422: {
-                        type: "validation";
-                        on: string;
-                        summary?: string;
-                        message?: string;
-                        found?: unknown;
-                        property?: string;
-                        expected?: string;
-                    };
-                };
-            };
-        };
-    };
-} & {
-    auth: {
-        "register-code": {
-            post: {
-                body: {
-                    email: string;
-                };
-                params: {};
-                query: unknown;
-                headers: unknown;
-                response: {
-                    200: {
-                        status: boolean;
-                    };
-                    404: {
-                        message: string;
-                        status: boolean;
-                    };
-                    422: {
-                        type: "validation";
-                        on: string;
-                        summary?: string;
-                        message?: string;
-                        found?: unknown;
-                        property?: string;
-                        expected?: string;
-                    };
-                };
-            };
-        };
-    };
-} & {
-    auth: {
-        register: {
-            post: {
-                body: {
-                    email: string;
-                    password: string;
-                    name: string;
-                    code: string;
-                };
-                params: {};
-                query: unknown;
-                headers: unknown;
-                response: {
-                    200: {
-                        jwt: string;
-                    };
-                    404: {
-                        message: string;
-                        status: boolean;
-                    };
-                    422: {
-                        type: "validation";
-                        on: string;
-                        summary?: string;
-                        message?: string;
-                        found?: unknown;
-                        property?: string;
-                        expected?: string;
+                    params: {};
+                    query: unknown;
+                    headers: unknown;
+                    response: {
+                        200: {
+                            token: string;
+                        };
+                        401: {
+                            error: string;
+                        };
+                        422: {
+                            type: "validation";
+                            on: string;
+                            summary?: string;
+                            message?: string;
+                            found?: unknown;
+                            property?: string;
+                            expected?: string;
+                        };
                     };
                 };
             };
@@ -280,9 +216,7 @@ export declare const authRoutes: Elysia<"/auth", {
     auth: {
         account: {
             delete: {
-                body: {
-                    password: string;
-                };
+                body: unknown;
                 params: {};
                 query: unknown;
                 headers: unknown;
@@ -290,8 +224,8 @@ export declare const authRoutes: Elysia<"/auth", {
                     200: {
                         deleted: boolean;
                     };
-                    404: string;
                     401: string;
+                    404: string;
                     422: {
                         type: "validation";
                         on: string;
@@ -300,6 +234,77 @@ export declare const authRoutes: Elysia<"/auth", {
                         found?: unknown;
                         property?: string;
                         expected?: string;
+                    };
+                };
+            };
+        };
+    };
+} & {
+    auth: {
+        create: {
+            log: {
+                post: {
+                    body: {
+                        itemId?: string | null | undefined;
+                        at: string;
+                        routineId: string;
+                        routineName: string;
+                        itemName: string;
+                        forgotten: boolean;
+                        weekday: number;
+                        minuteOfDay: number;
+                    }[];
+                    params: {};
+                    query: unknown;
+                    headers: unknown;
+                    response: {
+                        401: string;
+                        422: {
+                            type: "validation";
+                            on: string;
+                            summary?: string;
+                            message?: string;
+                            found?: unknown;
+                            property?: string;
+                            expected?: string;
+                        };
+                    };
+                };
+            };
+        };
+    };
+} & {
+    auth: {
+        read: {
+            log: {
+                get: {
+                    body: unknown;
+                    params: {};
+                    query: unknown;
+                    headers: unknown;
+                    response: {
+                        200: {
+                            at: string;
+                            id: string;
+                            userId: string;
+                            routineId: string;
+                            routineName: string;
+                            itemId: string | null;
+                            itemName: string;
+                            forgotten: boolean;
+                            weekday: number;
+                            minuteOfDay: number;
+                        }[];
+                        401: string;
+                        422: {
+                            type: "validation";
+                            on: string;
+                            summary?: string;
+                            message?: string;
+                            found?: unknown;
+                            property?: string;
+                            expected?: string;
+                        };
                     };
                 };
             };

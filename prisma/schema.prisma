@@ -19,19 +19,18 @@ datasource db {
 
 model user {
   id                    String          @id @default(uuid())
+  googleSub             String          @unique
   email                 String          @unique
-  password              String?
-  googleID              String?         @unique
+  name                  String?
+  avatarUrl             String?
   onboarding            Boolean         @default(false)
-  name                  String
   createdAt             DateTime        @default(now())
   fcmToken              String?
-  twoFactorCode         String?
-  twoFactorExpiresAt    DateTime?
   groups                groupMember[]
   routines              routine[]
   sharedRoutinesClaimed sharedRoutine[] @relation("SharedRoutineClaimer")
   sharedRoutinesCreated sharedRoutine[] @relation("SharedRoutineCreator")
+  stats                 forgetStat[]
 }
 
 model routine {
@@ -55,9 +54,29 @@ model routine {
   group          group?        @relation(fields: [groupId], references: [id], onDelete: Cascade)
   user           user?         @relation(fields: [userId], references: [id], onDelete: Cascade)
   items          routineItem[]
+  stats          forgetStat[]
 
   @@index([groupId], map: "routine_groupId_fkey")
   @@index([userId], map: "routine_userId_fkey")
+}
+
+model forgetStat {
+  id          String  @id @default(uuid())
+  at          String
+  routineId   String
+  userId      String
+  routineName String
+  itemId      String?
+  itemName    String
+  forgotten   Boolean
+  weekday     Int
+  minuteOfDay Int
+  routine     routine @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  user        user    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, routineId, itemName, at])
+  @@index([routineId], map: "forgetStat_routineId_fkey")
+  @@index([userId, at], map: "forgetStat_userId_fkey")
 }
 
 model location {

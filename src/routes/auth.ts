@@ -4,107 +4,76 @@ import {db} from "../../db.ts"
 import { userPlain } from "@/generated/prismabox/user.ts";
 import { mailer } from "../mail.ts";
 import { dragonFlyCache } from "../cache.ts";
+import { OAuth2Client } from "google-auth-library";
+import { forgetStat, forgetStatPlain } from "@/generated/prismabox/forgetStat.ts";
+
+const googleClient = new OAuth2Client();
+
+
+const WEB_CLIENT_ID = process.env.GOOGLE_WEB_CLIENT_ID!;
+
 
 export const authRoutes = new Elysia({ prefix: '/auth' }).use(dragonFlyCache).use(
   jwt({
     name: 'jwt',
     secret: process.env.JWT_SECRET! ,
   })
-).post("/login", async({body,jwt,status})=>{
-  const user = await db.user.findUnique({where: {email: body.email}})
+)
+.post("/auth/google", async({body, jwt, status} )=>{
+  const { idToken } = body;
 
-  if(!user) return status(404,"User with username does not exists")
-  if(!user.password) return status(404,"User with username does not exists")
-  const isValid = await Bun.password.verify(body.password,user.password)
-  if(!isValid) return status(404," Password and username not valid")
-  return {
-  message: "User Logged in",
-  jwt: await jwt.sign({ userId: user.id, email: user.email}),
-  status: true
-};
-}, {
-  body: t.Object({
-    email: t.String(),
-    password: t.String()
-  }),response: {
-    200:t.Object({message: t.String(), jwt: t.String(), status: t.Boolean()}), 404: t.String()
-  }
-})
-.post("register-code", async({body, store, status}) =>{
+  let payload;
 
-   const userExist = await db.user.findUnique({where: {email: body.email}})
-  if(userExist) return status(404, { message: "User already exists", status: false })
+   try {
+        const ticket = await googleClient.verifyIdToken({
+          idToken,
+          audience: WEB_CLIENT_ID,
+        });
+        payload = ticket.getPayload();
+      } catch {
+        return status(401, { error: "Invalid Google token" });
+      }
 
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    await store.cache.set(`email_verification:${body.email}`, code, 300)
+      if (!payload?.sub || !payload.email) {
+        return status(401, { error: "Token missing required claims" });
+      }
 
-    await mailer.sendMail({
-    from: '"GeoAlert" <support@medapp.de>',
-    to: body.email,
-    subject: "Dein GeoAlert Bestätigungscode",
-    html: `
-      <div style="font-family: system-ui, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px;">
-        <h2 style="color: #1A1917; font-size: 22px; margin-bottom: 8px;">Dein Code</h2>
-        <p style="color: #6B6860; font-size: 15px; margin-bottom: 28px;">
-          Gib diesen Code in der App ein. Er ist 10 Minuten gültig.
-        </p>
-        <div style="background: #EFF6FF; border: 1px solid #DBEAFE; border-radius: 16px;
-          padding: 28px; text-align: center; margin-bottom: 24px;">
-          <span style="font-size: 42px; font-weight: 700; letter-spacing: 12px; color: #2563EB;">
-            ${code}
-          </span>
-        </div>
-        <p style="color: #A09D97; font-size: 13px;">
-          Falls du das nicht angefordert hast, ignoriere diese E-Mail.
-        </p>
-      </div>
-    `,
-  });
+       const user = await db.user.upsert({
+        where: { googleSub: payload.sub },
+        update: {
+          email: payload.email,
+          name: payload.name ?? null,
+          avatarUrl: payload.picture ?? null,
+        },
+        create: {
+          googleSub: payload.sub,
+          email: payload.email,
+          name: payload.name ?? null,
+          avatarUrl: payload.picture ?? null,
+        },
+      });
 
-  return {status: true}
+      const token = await jwt.sign({ userId: user.id });
+
+      return {
+        token,
+       
+      };
+    
+
 
 },{
   body: t.Object({
-    email: t.String()
+    idToken: t.String()
   }),response: {
-    200: t.Object({status: t.Boolean()}),
-    404: t.Object({message: t.String(), status: t.Boolean()})
-  }
+        200: t.Object({
+          token: t.String(),
+         
+        }),
+        401: t.Object({ error: t.String() }),
+      },
 })
-
-.post("register", async({body,status,store,jwt})=>{
-
-  const code = await store.cache.get(`email_verification:${body.email}`)
-
-  if(code !== body.code){
-      return status(404, { message: "Code is not correct", status: false })
-  }
-  const userExist = await db.user.findUnique({where: {email: body.email}})
-  if(userExist) return status(404, { message: "User already exists", status: false })
-  const hashedPassword = await Bun.password.hash(body.password);
-
-  const user = await db.user.create({
-    data: {
-      email: body.email,
-      password: hashedPassword,
-      name: body.name
-    }
-  })
-  await store.cache.del(`email_verification:${body.email}`)
-
-  return {jwt: await jwt.sign({ userId: user.id, email: user.email})}
-
-},{
-   body: t.Object({
-    email: t.String(),
-    password: t.String(),
-    name: t.String(),
-    code: t.String()
-  }),response: {
-  200: t.Object({ jwt: t.String() }),
-  404: t.Object({ message: t.String(), status: t.Boolean() }),
-}
-}).get("/is/user/onboarded", async({query})=>{
+.get("/is/user/onboarded", async({query})=>{
 
   const user = await db.user.findUnique({where: {id: query.userId}})
   if(!user || !user.onboarding){
@@ -150,7 +119,7 @@ export const authRoutes = new Elysia({ prefix: '/auth' }).use(dragonFlyCache).us
     401: t.String(),
   }
 })
-.delete("/account", async({body, jwt, headers, status, store})=>{
+.delete("/account", async({jwt, headers, status, store})=>{
   const auth = headers.authorization;
   if (!auth?.startsWith("Bearer ")) return status(401, "Unauthorized");
   const token = auth.split(" ")[1];
@@ -160,10 +129,6 @@ export const authRoutes = new Elysia({ prefix: '/auth' }).use(dragonFlyCache).us
   const userId = payload.userId as string;
   const user = await db.user.findUnique({where: {id: userId}})
   if (!user) return status(404, "User not found");
-  if (!user.password) return status(401, "Password not valid");
-
-  const isValid = await Bun.password.verify(body.password, user.password)
-  if (!isValid) return status(401, "Password not valid");
 
   const groupIds = (await db.groupMember.findMany({
     where: { userId },
@@ -195,11 +160,56 @@ export const authRoutes = new Elysia({ prefix: '/auth' }).use(dragonFlyCache).us
 
   return { deleted: true }
 },{
-  body: t.Object({password: t.String()}),
   response: {
     200: t.Object({ deleted: t.Boolean() }),
     401: t.String(),
     404: t.String(),
+  }
+}).post("/create/log", async({body, jwt, headers ,status})=>{
+  const auth = headers.authorization;
+  if (!auth?.startsWith("Bearer ")) return status(401, "Unauthorized");
+  const token = auth.split(" ")[1];
+  const payload = await jwt.verify(token);
+  if (!payload || !payload.userId) return status(401, "Invalid token");
+    const userId = payload.userId as string;
+
+  await db.forgetStat.createMany({
+    data: body.map((item) => ({
+      userId,
+      ...item,
+    })),  skipDuplicates: true,
+
+    });
+
+},{
+  body: t.Array(t.Object({
+  at: t.String(),
+  routineId: t.String(),
+  routineName: t.String(),
+  itemId: t.Optional(t.Nullable(t.String())),
+  itemName: t.String(),
+  forgotten: t.Boolean(),
+  weekday: t.Number(),
+  minuteOfDay: t.Number(),
+  })),
+  response: {
+    401: t.String()
+  }
+}).get("/read/log", async({jwt,headers,status})=>{
+
+   const auth = headers.authorization;
+  if (!auth?.startsWith("Bearer ")) return status(401, "Unauthorized");
+  const token = auth.split(" ")[1];
+  const payload = await jwt.verify(token);
+  if (!payload || !payload.userId) return status(401, "Invalid token");
+  const userId = payload.userId as string;
+
+  return await db.forgetStat.findMany({where:{userId: userId},orderBy: {at: "desc"}})
+
+},{
+  response: {
+    200: t.Array(forgetStatPlain),
+    401: t.String()
   }
 })
 

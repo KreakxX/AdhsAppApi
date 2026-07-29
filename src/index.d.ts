@@ -111,95 +111,31 @@ export declare const app: Elysia<"", {
     auth: {};
 } & {
     auth: {
-        login: {
-            post: {
-                body: {
-                    email: string;
-                    password: string;
-                };
-                params: {};
-                query: unknown;
-                headers: unknown;
-                response: {
-                    200: {
-                        jwt: string;
-                        message: string;
-                        status: boolean;
+        auth: {
+            google: {
+                post: {
+                    body: {
+                        idToken: string;
                     };
-                    404: string;
-                    422: {
-                        type: "validation";
-                        on: string;
-                        summary?: string;
-                        message?: string;
-                        found?: unknown;
-                        property?: string;
-                        expected?: string;
-                    };
-                };
-            };
-        };
-    };
-} & {
-    auth: {
-        "register-code": {
-            post: {
-                body: {
-                    email: string;
-                };
-                params: {};
-                query: unknown;
-                headers: unknown;
-                response: {
-                    200: {
-                        status: boolean;
-                    };
-                    404: {
-                        message: string;
-                        status: boolean;
-                    };
-                    422: {
-                        type: "validation";
-                        on: string;
-                        summary?: string;
-                        message?: string;
-                        found?: unknown;
-                        property?: string;
-                        expected?: string;
-                    };
-                };
-            };
-        };
-    };
-} & {
-    auth: {
-        register: {
-            post: {
-                body: {
-                    email: string;
-                    password: string;
-                    name: string;
-                    code: string;
-                };
-                params: {};
-                query: unknown;
-                headers: unknown;
-                response: {
-                    200: {
-                        jwt: string;
-                    };
-                    404: {
-                        message: string;
-                        status: boolean;
-                    };
-                    422: {
-                        type: "validation";
-                        on: string;
-                        summary?: string;
-                        message?: string;
-                        found?: unknown;
-                        property?: string;
-                        expected?: string;
+                    params: {};
+                    query: unknown;
+                    headers: unknown;
+                    response: {
+                        200: {
+                            token: string;
+                        };
+                        401: {
+                            error: string;
+                        };
+                        422: {
+                            type: "validation";
+                            on: string;
+                            summary?: string;
+                            message?: string;
+                            found?: unknown;
+                            property?: string;
+                            expected?: string;
+                        };
                     };
                 };
             };
@@ -300,9 +236,7 @@ export declare const app: Elysia<"", {
     auth: {
         account: {
             delete: {
-                body: {
-                    password: string;
-                };
+                body: unknown;
                 params: {};
                 query: unknown;
                 headers: unknown;
@@ -310,8 +244,8 @@ export declare const app: Elysia<"", {
                     200: {
                         deleted: boolean;
                     };
-                    404: string;
                     401: string;
+                    404: string;
                     422: {
                         type: "validation";
                         on: string;
@@ -320,6 +254,77 @@ export declare const app: Elysia<"", {
                         found?: unknown;
                         property?: string;
                         expected?: string;
+                    };
+                };
+            };
+        };
+    };
+} & {
+    auth: {
+        create: {
+            log: {
+                post: {
+                    body: {
+                        itemId?: string | null | undefined;
+                        at: string;
+                        routineId: string;
+                        routineName: string;
+                        itemName: string;
+                        forgotten: boolean;
+                        weekday: number;
+                        minuteOfDay: number;
+                    }[];
+                    params: {};
+                    query: unknown;
+                    headers: unknown;
+                    response: {
+                        401: string;
+                        422: {
+                            type: "validation";
+                            on: string;
+                            summary?: string;
+                            message?: string;
+                            found?: unknown;
+                            property?: string;
+                            expected?: string;
+                        };
+                    };
+                };
+            };
+        };
+    };
+} & {
+    auth: {
+        read: {
+            log: {
+                get: {
+                    body: unknown;
+                    params: {};
+                    query: unknown;
+                    headers: unknown;
+                    response: {
+                        200: {
+                            at: string;
+                            id: string;
+                            userId: string;
+                            routineId: string;
+                            routineName: string;
+                            itemId: string | null;
+                            itemName: string;
+                            forgotten: boolean;
+                            weekday: number;
+                            minuteOfDay: number;
+                        }[];
+                        401: string;
+                        422: {
+                            type: "validation";
+                            on: string;
+                            summary?: string;
+                            message?: string;
+                            found?: unknown;
+                            property?: string;
+                            expected?: string;
+                        };
                     };
                 };
             };
@@ -578,9 +583,9 @@ export declare const app: Elysia<"", {
                     200: {
                         routine: any;
                     };
-                    404: string;
                     401: string;
                     403: string;
+                    404: string;
                     422: {
                         type: "validation";
                         on: string;
@@ -608,9 +613,9 @@ export declare const app: Elysia<"", {
                     200: {
                         message: string;
                     };
-                    404: string;
                     401: string;
                     403: string;
+                    404: string;
                     422: {
                         type: "validation";
                         on: string;
@@ -643,9 +648,9 @@ export declare const app: Elysia<"", {
                             200: {
                                 item: any;
                             };
-                            404: string;
                             401: string;
                             403: string;
+                            404: string;
                             422: {
                                 type: "validation";
                                 on: string;
@@ -678,9 +683,9 @@ export declare const app: Elysia<"", {
                             200: {
                                 message: string;
                             };
-                            404: string;
                             401: string;
                             403: string;
+                            404: string;
                             422: {
                                 type: "validation";
                                 on: string;
@@ -742,9 +747,9 @@ export declare const app: Elysia<"", {
                         sent?: number | undefined;
                         ok: boolean;
                     };
-                    404: string;
-                    400: string;
                     401: string;
+                    400: string;
+                    404: string;
                     422: {
                         type: "validation";
                         on: string;
@@ -812,14 +817,12 @@ export declare const app: Elysia<"", {
                             user: {
                                 email: string;
                                 id: string;
-                                password: string | null;
-                                googleID: string | null;
+                                googleSub: string;
+                                name: string | null;
+                                avatarUrl: string | null;
                                 onboarding: boolean;
-                                name: string;
                                 createdAt: Date;
                                 fcmToken: string | null;
-                                twoFactorCode: string | null;
-                                twoFactorExpiresAt: Date | null;
                             };
                         }[];
                     };
@@ -893,14 +896,12 @@ export declare const app: Elysia<"", {
                             user: {
                                 email: string;
                                 id: string;
-                                password: string | null;
-                                googleID: string | null;
+                                googleSub: string;
+                                name: string | null;
+                                avatarUrl: string | null;
                                 onboarding: boolean;
-                                name: string;
                                 createdAt: Date;
                                 fcmToken: string | null;
-                                twoFactorCode: string | null;
-                                twoFactorExpiresAt: Date | null;
                             };
                         }[];
                     }[];
@@ -932,9 +933,9 @@ export declare const app: Elysia<"", {
                     200: {
                         group: any;
                     };
-                    404: string;
-                    400: string;
                     401: string;
+                    400: string;
+                    404: string;
                     422: {
                         type: "validation";
                         on: string;
@@ -962,8 +963,8 @@ export declare const app: Elysia<"", {
                     200: {
                         message: string;
                     };
-                    404: string;
                     401: string;
+                    404: string;
                     422: {
                         type: "validation";
                         on: string;
@@ -1069,9 +1070,9 @@ export declare const app: Elysia<"", {
                     200: {
                         message: string;
                     };
-                    404: string;
                     401: string;
                     403: string;
+                    404: string;
                     422: {
                         type: "validation";
                         on: string;
@@ -1099,9 +1100,9 @@ export declare const app: Elysia<"", {
                     200: {
                         message: string;
                     };
-                    404: string;
                     401: string;
                     403: string;
+                    404: string;
                     422: {
                         type: "validation";
                         on: string;
@@ -1133,9 +1134,9 @@ export declare const app: Elysia<"", {
                                 200: {
                                     item: any;
                                 };
-                                404: string;
                                 401: "Unauthorized" | "Invalid token";
                                 403: string;
+                                404: string;
                                 422: {
                                     type: "validation";
                                     on: string;
@@ -1168,9 +1169,9 @@ export declare const app: Elysia<"", {
                             200: {
                                 ok: boolean;
                             };
-                            404: string;
                             401: "Unauthorized" | "Invalid token";
                             403: string;
+                            404: string;
                             422: {
                                 type: "validation";
                                 on: string;
@@ -1200,8 +1201,8 @@ export declare const app: Elysia<"", {
                     200: {
                         ok: boolean;
                     };
-                    404: "Not a member of this group";
                     401: "Unauthorized" | "Invalid token";
+                    404: "Not a member of this group";
                     422: {
                         type: "validation";
                         on: string;
@@ -1229,8 +1230,8 @@ export declare const app: Elysia<"", {
                     200: {
                         ok: boolean;
                     };
-                    404: "Not a member of this group";
                     401: "Unauthorized" | "Invalid token";
+                    404: "Not a member of this group";
                     422: {
                         type: "validation";
                         on: string;
@@ -1260,9 +1261,9 @@ export declare const app: Elysia<"", {
                         200: {
                             success: boolean;
                         };
-                        404: string;
                         401: "Unauthorized" | "Invalid token";
                         403: string;
+                        404: string;
                         422: {
                             type: "validation";
                             on: string;
