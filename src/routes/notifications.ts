@@ -60,7 +60,7 @@ export const notificationRoutes = new Elysia({ prefix: "/notifications" })
     if (tokens.length === 0) return { ok: true, sent: 0 };
 
     const notificationBody = body.message
-      ?? `${triggeringUser?.name} ist bei "${routine.name}". Schau nach ob du etwas brauchst!`;
+      ?? `${triggeringUser?.name} ist bei "${routine.name}".`;
 
     const result = await fcm.sendEachForMulticast({
       tokens,
