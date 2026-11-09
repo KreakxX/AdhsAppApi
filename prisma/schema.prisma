@@ -18,43 +18,42 @@ datasource db {
 }
 
 model user {
-  id                    String          @id @default(uuid())
-  googleSub             String          @unique
-  email                 String          @unique
-  name                  String?
-  avatarUrl             String?
-  onboarding            Boolean         @default(false)
-  createdAt             DateTime        @default(now())
-  fcmToken              String?
-  groups                groupMember[]
-  routines              routine[]
-  sharedRoutinesClaimed sharedRoutine[] @relation("SharedRoutineClaimer")
-  sharedRoutinesCreated sharedRoutine[] @relation("SharedRoutineCreator")
-  stats                 forgetStat[]
+  id         String        @id @default(uuid())
+  googleSub  String        @unique
+  email      String        @unique
+  name       String?
+  avatarUrl  String?
+  onboarding Boolean       @default(false)
+  createdAt  DateTime      @default(now())
+  fcmToken   String?
+  groups     groupMember[]
+  routines   routine[]
+  stats      forgetStat[]
 }
 
 model routine {
-  id             String        @id @default(uuid())
-  name           String
-  radius         Int           @default(50)
-  triggerHour    Int?
-  triggerMinute  Int?
-  freeSpace      Int?
-  locations      location[]
-  street         String?
-  streetNumber   String?
-  createdAt      DateTime      @default(now())
-  userId         String?
-  groupId        String?
-  triggerOnExit  Boolean       @default(false)
-  activeDays     Json?
-  timeframeEnd   String?
-  timeframeStart String?
-  weeklyPlan     Json?
-  group          group?        @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  user           user?         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  items          routineItem[]
-  stats          forgetStat[]
+  id              String        @id @default(uuid())
+  name            String
+  radius          Int           @default(50)
+  triggerHour     Int?
+  triggerMinute   Int?
+  freeSpace       Int?
+  locations       location[]
+  street          String?
+  streetNumber    String?
+  createdAt       DateTime      @default(now())
+  userId          String?
+  groupId         String?
+  triggerOnExit   Boolean       @default(false)
+  activeDays      Json?
+  timeframeEnd    String?
+  timeframeStart  String?
+  weeklyPlan      Json?
+  group           group?        @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user            user?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items           routineItem[]
+  stats           forgetStat[]
+  assignedUserIds Json          @default("[]")
 
   @@index([groupId], map: "routine_groupId_fkey")
   @@index([userId], map: "routine_userId_fkey")
@@ -122,42 +121,4 @@ model groupMember {
 
   @@unique([groupId, userId])
   @@index([userId], map: "groupMember_userId_fkey")
-}
-
-model sharedRoutine {
-  id              String              @id @default(uuid())
-  token           String              @unique
-  routineId       String
-  routineName     String
-  radius          Int
-  triggerHour     Int?
-  triggerMinute   Int?
-  triggerOnExit   Boolean             @default(false)
-  latitude        Float?
-  longitude       Float?
-  street          String?
-  streetNumber    String?
-  freeSpace       Int?
-  createdByUserId String
-  claimedAt       DateTime?
-  claimedByUserId String?
-  expiresAt       DateTime?
-  createdAt       DateTime            @default(now())
-  claimedBy       user?               @relation("SharedRoutineClaimer", fields: [claimedByUserId], references: [id])
-  createdBy       user                @relation("SharedRoutineCreator", fields: [createdByUserId], references: [id], onDelete: Cascade)
-  items           sharedRoutineItem[]
-
-  @@index([claimedByUserId], map: "sharedRoutine_claimedByUserId_fkey")
-  @@index([createdByUserId], map: "sharedRoutine_createdByUserId_fkey")
-}
-
-model sharedRoutineItem {
-  id              String        @id @default(uuid())
-  name            String
-  description     String?
-  imageUrl        String?
-  sharedRoutineId String
-  sharedRoutine   sharedRoutine @relation(fields: [sharedRoutineId], references: [id], onDelete: Cascade)
-
-  @@index([sharedRoutineId], map: "sharedRoutineItem_sharedRoutineId_fkey")
 }

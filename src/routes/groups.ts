@@ -110,6 +110,7 @@ routines: {
   }, {
     body: t.Object({
       name: t.String(),
+     
     }),
     response: {
 200: t.Object({
@@ -300,6 +301,7 @@ routines: {
         }))}: undefined,        freeSpace:     body.freeSpace,
         street:        body.street,
         streetNumber:  body.streetNumber,
+        assignedUserIds: body.assignedUserIds,
         triggerOnExit: body.triggerOnExit,
         groupId:       body.groupId,
         userId: userId,
@@ -343,11 +345,13 @@ routines: {
       street:        t.Optional(t.Nullable(t.String())),
       freeSpace:      t.Optional(t.Nullable(t.Number())),
       streetNumber:  t.Optional(t.Nullable(t.String())),
+      // Optional: empty / missing = everyone in the group.
+      assignedUserIds: t.Optional(t.Array(t.String())),
+
       items: t.Optional(t.Array(t.Object({
       name:        t.String(),
       description: t.Optional(t.Nullable(t.String())),
       imageUrl:    t.Optional(t.Nullable(t.String())),
-      
     }))),
     }),
     response: {
@@ -468,16 +472,25 @@ routines: {
   });
 
   if (!membership) return status(403, "Nicht Mitglied dieser Gruppe");
+      
+    const ids = (reminder.assignedUserIds ?? []) as string[];
+    if (ids.length > 0 && !ids.includes(userId)) {
+      return status(403, "Not Assigned to this Task");
+    }
+
+  const existing = await db.routineItem.findFirst({
+    where: { id: params.itemId, routineId: params.reminderId },
+  });
+  if (!existing) return status(404, "Eintrag nicht gefunden");
 
   const item = await db.routineItem.update({
-    where: { id: params.itemId },
+    where: { id: existing.id },
     data: {
       checkedBy: userId,
       checkedAt: new Date(),
     },
   });
 
-  // The checkmark and its activity entry are what the others are waiting on.
   await invalidateGroupCaches(store.cache, reminder.groupId, userId);
 
    const groups = await db.group.findMany({
@@ -502,7 +515,9 @@ routines: {
     404: t.String(),
   },
 })
-.delete("/reminders/:reminderId/reset", async ({ userId, params, status, store }) => {
+// Uncheck an item again (tapped by mistake, or bought after all). Same rules
+// as checking: member of the group and assigned (empty list = everyone).
+.delete("/reminders/:reminderId/items/:itemId", async ({ userId, params, status, store }) => {
   const reminder = await db.routine.findUnique({
     where: { id: params.reminderId },
   });
@@ -515,19 +530,25 @@ routines: {
 
   if (!membership) return status(403, "Nicht Mitglied dieser Gruppe");
 
-  await db.routineItem.updateMany({
-    where: { routineId: params.reminderId },
+  const ids = (reminder.assignedUserIds ?? []) as string[];
+  if (ids.length > 0 && !ids.includes(userId)) {
+    return status(403, "Not Assigned to this Task");
+  }
+
+  // Scoped to this reminder, so an item id from another group can't be
+  // unchecked through it.
+  const { count } = await db.routineItem.updateMany({
+    where: { id: params.itemId, routineId: params.reminderId },
     data: { checkedBy: null, checkedAt: null },
   });
 
-  // No `exceptUserId`: this handler writes no cache of its own, so the caller
-  // would otherwise keep serving the checkmarks it just cleared. Called on
-  // every geofence trigger, which is exactly when the list must read empty.
+  if (count === 0) return status(404, "Eintrag nicht gefunden");
+
   await invalidateGroupCaches(store.cache, reminder.groupId);
 
   return { ok: true };
 }, {
-  params: t.Object({ reminderId: t.String() }),
+  params: t.Object({ reminderId: t.String(), itemId: t.String() }),
   response: {
     200: t.Object({ ok: t.Boolean() }),
     403: t.String(),

@@ -367,11 +367,12 @@ export declare const app: Elysia<"", {
                         timeframeEnd: string | null;
                         timeframeStart: string | null;
                         weeklyPlan: any;
+                        assignedUserIds: any;
                         locations: {
                             routineId: string;
-                            latitude: number;
-                            longitude: number;
                             locationId: string;
+                            longitude: number;
+                            latitude: number;
                         }[];
                     }[];
                 };
@@ -412,9 +413,9 @@ export declare const app: Elysia<"", {
                             }[];
                             locations: {
                                 routineId: string;
-                                latitude: number;
-                                longitude: number;
                                 locationId: string;
+                                longitude: number;
+                                latitude: number;
                             }[];
                         } & {
                             id: string;
@@ -433,6 +434,7 @@ export declare const app: Elysia<"", {
                             timeframeEnd: string | null;
                             timeframeStart: string | null;
                             weeklyPlan: import("@prisma/client/runtime/library").JsonValue | null;
+                            assignedUserIds: import("@prisma/client/runtime/library").JsonValue;
                         };
                     };
                     401: "No Authorization Header found" | "Invalid or expired token";
@@ -481,8 +483,8 @@ export declare const app: Elysia<"", {
                 } | null | undefined;
                 name: string;
                 locations: {
-                    latitude: number;
                     longitude: number;
+                    latitude: number;
                 }[];
             };
             params: {};
@@ -516,11 +518,12 @@ export declare const app: Elysia<"", {
                         timeframeEnd: string | null;
                         timeframeStart: string | null;
                         weeklyPlan: any;
+                        assignedUserIds: any;
                         locations: {
                             routineId: string;
-                            latitude: number;
-                            longitude: number;
                             locationId: string;
+                            longitude: number;
+                            latitude: number;
                         }[];
                     };
                 };
@@ -570,8 +573,8 @@ export declare const app: Elysia<"", {
                         }[];
                     } | null | undefined;
                     locations: {
-                        latitude: number;
                         longitude: number;
+                        latitude: number;
                     }[];
                 };
                 params: {
@@ -806,9 +809,10 @@ export declare const app: Elysia<"", {
                             timeframeEnd: string | null;
                             timeframeStart: string | null;
                             weeklyPlan: any;
+                            assignedUserIds: any;
                         }[];
-                        createdByUserId: string | null;
                         inviteCode: string;
+                        createdByUserId: string | null;
                         members: {
                             id: string;
                             groupId: string;
@@ -879,15 +883,16 @@ export declare const app: Elysia<"", {
                             timeframeEnd: string | null;
                             timeframeStart: string | null;
                             weeklyPlan: any;
+                            assignedUserIds: any;
                             locations: {
                                 routineId: string;
-                                latitude: number;
-                                longitude: number;
                                 locationId: string;
+                                longitude: number;
+                                latitude: number;
                             }[];
                         }[];
-                        createdByUserId: string | null;
                         inviteCode: string;
+                        createdByUserId: string | null;
                         members: {
                             id: string;
                             groupId: string;
@@ -995,11 +1000,12 @@ export declare const app: Elysia<"", {
                     street?: string | null | undefined;
                     streetNumber?: string | null | undefined;
                     triggerOnExit?: boolean | undefined;
+                    assignedUserIds?: string[] | undefined;
                     name: string;
                     groupId: string;
                     locations: {
-                        latitude: number;
                         longitude: number;
+                        latitude: number;
                     }[];
                 };
                 params: {};
@@ -1033,11 +1039,12 @@ export declare const app: Elysia<"", {
                             timeframeEnd: string | null;
                             timeframeStart: string | null;
                             weeklyPlan: any;
+                            assignedUserIds: any;
                             locations: {
                                 routineId: string;
-                                latitude: number;
-                                longitude: number;
                                 locationId: string;
+                                longitude: number;
+                                latitude: number;
                             }[];
                         };
                     };
@@ -1157,29 +1164,32 @@ export declare const app: Elysia<"", {
     groups: {
         reminders: {
             ":reminderId": {
-                reset: {
-                    delete: {
-                        body: unknown;
-                        params: {
-                            reminderId: string;
-                        };
-                        query: unknown;
-                        headers: unknown;
-                        response: {
-                            200: {
-                                ok: boolean;
+                items: {
+                    ":itemId": {
+                        delete: {
+                            body: unknown;
+                            params: {
+                                itemId: string;
+                                reminderId: string;
                             };
-                            401: "Unauthorized" | "Invalid token";
-                            403: string;
-                            404: string;
-                            422: {
-                                type: "validation";
-                                on: string;
-                                summary?: string;
-                                message?: string;
-                                found?: unknown;
-                                property?: string;
-                                expected?: string;
+                            query: unknown;
+                            headers: unknown;
+                            response: {
+                                200: {
+                                    ok: boolean;
+                                };
+                                401: "Unauthorized" | "Invalid token";
+                                403: string;
+                                404: string;
+                                422: {
+                                    type: "validation";
+                                    on: string;
+                                    summary?: string;
+                                    message?: string;
+                                    found?: unknown;
+                                    property?: string;
+                                    expected?: string;
+                                };
                             };
                         };
                     };
