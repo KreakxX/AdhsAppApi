@@ -96,6 +96,9 @@ model routineItem {
   routineId   String
   checkedAt   DateTime?
   checkedBy   String?
+  // Weekdays this item is needed on (Date.getDay(): 0 = Sunday … 6 = Saturday).
+  // null = every day.
+  days        Json?
   routine     routine   @relation(fields: [routineId], references: [id], onDelete: Cascade)
 
   @@index([routineId], map: "routineItem_routineId_fkey")

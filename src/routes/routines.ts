@@ -115,6 +115,7 @@ export const routineRoutes = new Elysia({ prefix: "/routines" })
               name:        item.name,
               description: item.description,
               imageUrl:    item.imageUrl,
+              days:        toJson(item.days),
             })) }
           : undefined,
       },
@@ -144,6 +145,8 @@ export const routineRoutes = new Elysia({ prefix: "/routines" })
         name:        t.String(),
         description: t.Optional(t.Nullable(t.String())),
         imageUrl:    t.Optional(t.Nullable(t.String())),
+        // Weekdays (Date.getDay()) the item is needed on; null/absent = every day.
+        days:        t.Optional(t.Nullable(t.Array(t.Number()))),
       }))),
     }),
     response: {
@@ -186,6 +189,7 @@ export const routineRoutes = new Elysia({ prefix: "/routines" })
               name:        item.name,
               description: item.description,
               imageUrl:    item.imageUrl,
+              days:        toJson(item.days),
             })) }
           : undefined,
       },
@@ -216,6 +220,8 @@ export const routineRoutes = new Elysia({ prefix: "/routines" })
         name:        t.String(),
         description: t.Optional(t.Nullable(t.String())),
         imageUrl:    t.Optional(t.Nullable(t.String())),
+        // Weekdays (Date.getDay()) the item is needed on; null/absent = every day.
+        days:        t.Optional(t.Nullable(t.Array(t.Number()))),
       }))),
     }),
     response: {
