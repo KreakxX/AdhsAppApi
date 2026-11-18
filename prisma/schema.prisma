@@ -46,6 +46,8 @@ model routine {
   groupId         String?
   triggerOnExit   Boolean       @default(false)
   activeDays      Json?
+  /// Evening-before reminder for each active day (every day if activeDays is empty).
+  remindDayBefore Boolean       @default(false)
   timeframeEnd    String?
   timeframeStart  String?
   weeklyPlan      Json?
